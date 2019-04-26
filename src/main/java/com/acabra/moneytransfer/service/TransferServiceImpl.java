@@ -10,15 +10,18 @@ import org.slf4j.LoggerFactory;
 public class TransferServiceImpl implements TransferService {
 
     private final TransferDAO transfers;
+    private final AccountDAO accountDAO;
 
     Logger logger = LoggerFactory.getLogger(TransferServiceImpl.class);
 
-    public TransferServiceImpl(TransferDAO transfers) {
+    public TransferServiceImpl(TransferDAO transfers, AccountDAO accountDAO) {
         this.transfers = transfers;
+        this.accountDAO = accountDAO;
     }
 
     @Override
-    public boolean transfer(AccountsTransferLock transferLock, TransferRequest transferRequest) {
+    public boolean transfer(TransferRequest transferRequest) {
+        AccountsTransferLock transferLock = accountDAO.lockAccountsForTransfer(transferRequest);
         try {
             transfers.storeTransfer(transferRequest);
             transferLock.tx.commit();
@@ -27,6 +30,8 @@ public class TransferServiceImpl implements TransferService {
             transferLock.tx.rollback();
             logger.error(e.getMessage(), e);
             return false;
+        } finally {
+            transferLock.close();
         }
     }
 }

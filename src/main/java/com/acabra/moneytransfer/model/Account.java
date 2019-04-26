@@ -23,7 +23,7 @@ public class Account {
 
     synchronized public void withdraw(BigDecimal amount) {
         if (isInvalidWithdrawAmount(amount)) {
-            throw new InvalidOperationException(String.format("Unable to withdraw %s from the account remaining balance %s", amount.toString(), balance.toString()));
+            throw new InvalidOperationException(String.format("Unable to withdraw %s from the account [%d] remaining balance %s", amount.toString(), this.id, balance.toString()));
         }
         balance = balance.subtract(amount);
     }

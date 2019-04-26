@@ -3,6 +3,7 @@ package com.acabra.moneytransfer.dao.h2;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.TransferRequest;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 
@@ -93,7 +94,9 @@ public class AccountDAOH2Impl implements AccountDAO {
     }
 
     @Override
-    public AccountsTransferLock lockAccountsForTransfer(long sourceAccountId, long destinationAccountId, BigDecimal amount) {
+    public AccountsTransferLock lockAccountsForTransfer(TransferRequest transferRequest) {
+        long sourceAccountId = transferRequest.sourceAccountId, destinationAccountId = transferRequest.destinationAccountId;
+        BigDecimal amount =transferRequest.transferAmount;
         Connection tx = sql2o.beginTransaction();
         try {
             List<Account> accounts = tx.createQuery(RETRIEVE_ACCOUNTS_FOR_TRANSFER)
