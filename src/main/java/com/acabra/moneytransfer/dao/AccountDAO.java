@@ -14,4 +14,8 @@ public interface AccountDAO {
     List<Account> retrieveAccountsByIds(List<Long> ids);
 
     Account createAccount(BigDecimal initialBalance);
+
+    AccountsTransferLock lockAccountsForTransfer(long sourceAccountId, long destinationAccountId, BigDecimal transferAmount);
+
+    void updateAccountBalance(Account account);
 }

@@ -73,4 +73,14 @@ public class AccountDAOH2ImplTest {
             Assert.assertEquals(0, initialAmount.compareTo(account.getBalance()));
         }
     }
+
+    @Test
+    public void should_update_account_balance() {
+        BigDecimal initialAmount = BigDecimal.TEN;
+        Account account = dao.createAccount(initialAmount);
+        account.withdraw(BigDecimal.ONE);
+        BigDecimal expectedAccountSize = initialAmount.subtract(BigDecimal.ONE);
+        dao.updateAccountBalance(account);
+        Assert.assertEquals(0, dao.retrieveAccountById(account.getId()).getBalance().compareTo(expectedAccountSize));
+    }
 }

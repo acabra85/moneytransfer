@@ -21,14 +21,14 @@ public class Account {
         this.balance = ZERO;
     }
 
-    public void withdraw(BigDecimal amount) {
+    synchronized public void withdraw(BigDecimal amount) {
         if (isInvalidWithdrawAmount(amount)) {
             throw new InvalidOperationException(String.format("Unable to withdraw %s from the account remaining balance %s", amount.toString(), balance.toString()));
         }
         balance = balance.subtract(amount);
     }
 
-    public void deposit(BigDecimal amount) {
+    synchronized public void deposit(BigDecimal amount) {
         if (invalidDepositAmount(amount)) {
             throw new InvalidOperationException(String.format("The given deposit %s must be greater than zero", amount.toString()));
         }

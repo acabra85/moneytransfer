@@ -33,6 +33,7 @@ public class H2Sql2oHelper {
         try(Connection tx = sql2o.beginTransaction()) {
             tx.createQuery(AccountDAOH2Impl.CLEAN_DB).executeUpdate();
             tx.createQuery(AccountDAOH2Impl.CREATE_TABLE_ACCOUNT).executeUpdate();
+            tx.createQuery(TransferDAOH2Impl.CREATE_TABLE_TRANSFER).executeUpdate();
             tx.commit();
         }
     }
