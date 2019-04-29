@@ -7,7 +7,11 @@ Download the source code and execute the following command on the root folder 'm
 1. For non-windows users ``` ./mvnw clean install; java -jar target/moneytransfer-1.0-SNAPSHOT.jar ```
 1. For windows users ```mvnw.exe clean install; java -jar target/moneytransfer-1.0-SNAPSHOT.jar```
 
-An http server will be listening http://127.0.0.1:4567
+An http server will be listening on http://127.0.0.1:4567
+
+### Test Coverage
+To see the test coverage report head to target/site/jacoco/index.html
+
 
 ## API
 * ``` /api/accounts ``` [GET] List all accounts
@@ -50,7 +54,7 @@ and the environment postman/Local.postman_environment.json.
 
 * h2 (in memory db)
 * fasterxml/jackson (json parsing)
-* junit rest-assured mockito (testing)
+* junit rest-assured mockito jacoco (testing reporting)
 * javaspark (jetty http server and endpoint definitions for REST)
 
 ## Summary
