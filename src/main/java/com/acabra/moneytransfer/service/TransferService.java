@@ -1,8 +1,14 @@
 package com.acabra.moneytransfer.service;
 
-import com.acabra.moneytransfer.model.TransferRequest;
+import com.acabra.moneytransfer.model.Transfer;
+import com.acabra.moneytransfer.request.TransferRequest;
+import java.util.List;
 
 public interface TransferService {
 
-    boolean transfer(TransferRequest transferRequest);
+    Transfer transfer(TransferRequest transferRequest);
+
+    List<Transfer> retrieveAllTransfers();
+
+    List<Transfer> retrieveAllTransfersByAccountId(Long accountId);
 }

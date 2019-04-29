@@ -3,11 +3,11 @@ package com.acabra.moneytransfer.dao;
 import com.acabra.moneytransfer.model.Account;
 import org.sql2o.Connection;
 
-public class AccountsTransferLock implements AutoCloseable {
+public class AccountsTransferLock {
 
-    public final Connection tx;
-    public final Account source;
-    public final Account destination;
+    private final Connection tx;
+    private final Account source;
+    private final Account destination;
 
     public AccountsTransferLock(Connection tx, Account source, Account destination) {
         this.tx = tx;
@@ -15,8 +15,23 @@ public class AccountsTransferLock implements AutoCloseable {
         this.destination = destination;
     }
 
-    @Override
+    public Account getSourceAccount() {
+        return source;
+    }
+
+    public Account getDestinationAccount() {
+        return destination;
+    }
+
     public void close() {
         tx.close();
+    }
+
+    public void rollback() {
+        tx.rollback();
+    }
+
+    public Connection getTx() {
+        return tx;
     }
 }

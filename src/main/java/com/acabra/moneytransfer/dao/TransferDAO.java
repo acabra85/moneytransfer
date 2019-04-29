@@ -1,13 +1,15 @@
 package com.acabra.moneytransfer.dao;
 
-import com.acabra.moneytransfer.dto.TransferDTO;
-import com.acabra.moneytransfer.model.TransferRequest;
-
+import com.acabra.moneytransfer.model.Transfer;
+import com.acabra.moneytransfer.request.TransferRequest;
 import java.util.List;
+import org.sql2o.Connection;
 
 public interface TransferDAO {
 
-    void storeTransfer(TransferRequest request);
+    Transfer storeTransferAndCommitTransactional(TransferRequest transferRequest, Connection tx);
 
-    List<TransferDTO> retrieveTransfersByAccountId(long accountId);
+    List<Transfer> retrieveTransfersByAccountId(long accountId);
+
+    List<Transfer> retrieveAllTransfers();
 }

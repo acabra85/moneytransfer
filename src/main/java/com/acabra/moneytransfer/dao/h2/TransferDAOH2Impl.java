@@ -1,12 +1,11 @@
 package com.acabra.moneytransfer.dao.h2;
 
 import com.acabra.moneytransfer.dao.TransferDAO;
-import com.acabra.moneytransfer.dto.TransferDTO;
-import com.acabra.moneytransfer.model.TransferRequest;
+import com.acabra.moneytransfer.model.Transfer;
+import com.acabra.moneytransfer.request.TransferRequest;
+import java.util.List;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
-
-import java.util.List;
 
 public class TransferDAOH2Impl implements TransferDAO {
 
@@ -30,35 +29,54 @@ public class TransferDAOH2Impl implements TransferDAO {
                     "VALUES(:timestamp, :source, :destination, :amount)";
 
     private static final String RETRIEVE_TRANSFERS_BY_ACCOUNT_ID =
-            "SELECT transfer_timestamp as timestamp, " +
+            "SELECT transfer_id as id, " +
+                    "transfer_timestamp as timestamp, " +
                     "source_account_id as sourceAccountId, " +
                     "destination_account_id as destinationAccountId, " +
-                    "transfer_amount as amount " +
+                    "transfer_amount as transferAmount " +
             "FROM transfer " +
-            "WHERE source_account_id = :id OR destination_account_id = :id";
+            "WHERE source_account_id = :id OR destination_account_id = :id " +
+            "ORDER BY transfer_id ASC";
+
+    private static final String RETRIEVE_ALL_TRANSFERS =
+            "SELECT transfer_id as id, " +
+                    "transfer_timestamp as timestamp, " +
+                    "source_account_id as sourceAccountId, " +
+                    "destination_account_id as destinationAccountId, " +
+                    "transfer_amount as transferAmount " +
+                    "FROM transfer " +
+                    "ORDER BY transfer_id ASC";
 
     public TransferDAOH2Impl(Sql2o sql2o) {
         this.sql2o = sql2o;
     }
 
     @Override
-    public void storeTransfer(TransferRequest request) {
+    public Transfer storeTransferAndCommitTransactional(TransferRequest transferRequest, Connection tx) {
+        Long id = tx.createQuery(STORE_TRANSFER_QUERY)
+                .addParameter("timestamp", transferRequest.getTimestamp())
+                .addParameter("source", transferRequest.getSourceAccountId())
+                .addParameter("destination", transferRequest.getDestinationAccountId())
+                .addParameter("amount", transferRequest.getTransferAmount())
+                .executeUpdate().getKey(Long.class);
+        tx.commit();
+        return new Transfer(id, transferRequest.getTimestamp(), transferRequest.getSourceAccountId(), transferRequest.getDestinationAccountId(), transferRequest.getTransferAmount());
+    }
+
+    @Override
+    public List<Transfer> retrieveTransfersByAccountId(long accountId) {
         try (Connection cx = sql2o.open()) {
-            cx.createQuery(STORE_TRANSFER_QUERY)
-                    .addParameter("timestamp", request.timestamp)
-                    .addParameter("source", request.sourceAccountId)
-                    .addParameter("destination", request.destinationAccountId)
-                    .addParameter("amount", request.transferAmount)
-                    .executeUpdate();
+            return cx.createQuery(RETRIEVE_TRANSFERS_BY_ACCOUNT_ID)
+                    .addParameter("id", accountId)
+                    .executeAndFetch(Transfer.class);
         }
     }
 
     @Override
-    public List<TransferDTO> retrieveTransfersByAccountId(long accountId) {
+    public List<Transfer> retrieveAllTransfers() {
         try (Connection cx = sql2o.open()) {
-            return cx.createQuery(RETRIEVE_TRANSFERS_BY_ACCOUNT_ID)
-                    .addParameter("id", accountId)
-                    .executeAndFetch(TransferDTO.class);
+            return cx.createQuery(RETRIEVE_ALL_TRANSFERS)
+                    .executeAndFetch(Transfer.class);
         }
     }
 }

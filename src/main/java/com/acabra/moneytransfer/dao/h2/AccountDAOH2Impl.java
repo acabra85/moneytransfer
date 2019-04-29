@@ -3,8 +3,10 @@ package com.acabra.moneytransfer.dao.h2;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
-import com.acabra.moneytransfer.model.TransferRequest;
+import java.sql.ResultSet;
+import java.util.NoSuchElementException;
 import org.sql2o.Connection;
+import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import java.math.BigDecimal;
@@ -53,6 +55,13 @@ public class AccountDAOH2Impl implements AccountDAO {
             "SET account_balance = :balance " +
             "WHERE account_id = :id";
 
+    /*
+        sql2o default executeAndFetch(<Object>.class) does not use class constructors hence fails to instantiate the
+        transient Account lock. By manually creating the Account objects the class constructor instantiates all fields
+        as expected.
+     */
+    ResultSetHandler<Account> ACCOUNT_RESULT_SET_HANDLER = (ResultSet resultSet) -> new Account(resultSet.getLong("id"), resultSet.getBigDecimal("balance"));
+
     public AccountDAOH2Impl(Sql2o sql2o) {
         this.sql2o = sql2o;
     }
@@ -62,15 +71,15 @@ public class AccountDAOH2Impl implements AccountDAO {
         try(Connection connection = sql2o.open()) {
             return connection.createQuery(RETRIEVE_ACCOUNT_BY_ID)
                     .addParameter("account_id", id)
-                    .executeAndFetchFirst(Account.class);
+                    .executeAndFetchFirst(ACCOUNT_RESULT_SET_HANDLER);
         }
     }
 
     @Override
-    public List<Account> getAccounts() {
+    public List<Account> retrieveAllAccounts() {
         try(Connection connection = sql2o.open()) {
             return connection.createQuery(RETRIEVE_ALL_ACCOUNTS)
-                    .executeAndFetch(Account.class);
+                    .executeAndFetch(ACCOUNT_RESULT_SET_HANDLER);
         }
     }
 
@@ -79,7 +88,7 @@ public class AccountDAOH2Impl implements AccountDAO {
         try(Connection connection = sql2o.open()) {
             return connection.createQuery(RETRIEVE_ACCOUNTS_BY_IDS)
                     .addParameter("ids", ids)
-                    .executeAndFetch(Account.class);
+                    .executeAndFetch(ACCOUNT_RESULT_SET_HANDLER);
         }
     }
 
@@ -94,42 +103,41 @@ public class AccountDAOH2Impl implements AccountDAO {
     }
 
     @Override
-    public AccountsTransferLock lockAccountsForTransfer(TransferRequest transferRequest) {
-        long sourceAccountId = transferRequest.sourceAccountId, destinationAccountId = transferRequest.destinationAccountId;
-        BigDecimal amount =transferRequest.transferAmount;
+    public AccountsTransferLock lockAccountsForTransfer(long sourceAccountId, long destinationAccountId) {
         Connection tx = sql2o.beginTransaction();
         try {
             List<Account> accounts = tx.createQuery(RETRIEVE_ACCOUNTS_FOR_TRANSFER)
                     .addParameter("sourceAccountId", sourceAccountId)
                     .addParameter("destinationAccountId", destinationAccountId)
-                    .executeAndFetch(Account.class);
+                    .executeAndFetch(ACCOUNT_RESULT_SET_HANDLER);
             if (accounts.size() == 2) {
                 Account source = accounts.get(0).getId() == sourceAccountId ? accounts.get(0) : accounts.get(1);
                 Account destination = accounts.get(1).getId() == destinationAccountId ? accounts.get(1) : accounts.get(0);
-                source.withdraw(amount);
-                updateBalanceTransactional(tx, source);
-                destination.deposit(amount);
-                updateBalanceTransactional(tx, destination);
                 return new AccountsTransferLock(tx, source, destination);
             }
-            throw new IllegalStateException(String.format("Unable to find the given accounts [%d, %d] in the db: ", sourceAccountId, destinationAccountId));
+            throw new NoSuchElementException(String.format("Unable to find %d of the given account(s) [%d, %d] in the db: ", 2 - accounts.size(), sourceAccountId, destinationAccountId));
         } catch (Exception e) {
             tx.rollback();
+            tx.close();
             throw e;
         }
     }
 
-    private void updateBalanceTransactional(Connection tx, Account source) {
+    @Override
+    public void updateAccountBalanceTransactional(Account account, Connection tx) {
         tx.createQuery(UPDATE_ACCOUNT_BALANCE)
-                .addParameter("balance", source.getBalance())
-                .addParameter("id", source.getId())
+                .addParameter("balance", account.getBalance())
+                .addParameter("id", account.getId())
                 .executeUpdate();
     }
 
     @Override
     public void updateAccountBalance(Account account) {
-        try(Connection cx = sql2o.open()) {
-            updateBalanceTransactional(cx, account);
+        try (Connection cx = sql2o.open()) {
+            cx.createQuery(UPDATE_ACCOUNT_BALANCE)
+                    .addParameter("balance", account.getBalance())
+                    .addParameter("id", account.getId())
+                    .executeUpdate();
         }
     }
 }

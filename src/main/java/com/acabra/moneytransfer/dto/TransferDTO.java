@@ -1,5 +1,6 @@
 package com.acabra.moneytransfer.dto;
 
+import com.acabra.moneytransfer.model.Transfer;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -17,6 +18,10 @@ public class TransferDTO {
         this.sourceAccountId = sourceAccountId;
         this.destinationAccountId = destinationAccountId;
         this.amount = amount;
+    }
+
+    public static TransferDTO fromTransfer(Transfer transfer) {
+        return new TransferDTO(transfer.id, transfer.timestamp, transfer.sourceAccountId, transfer.destinationAccountId, transfer.transferAmount);
     }
 
     @Override

@@ -1,15 +1,14 @@
 package com.acabra.moneytransfer.dao.h2;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import org.sql2o.Connection;
+import org.sql2o.Sql2o;
 import org.sql2o.converters.Converter;
 import org.sql2o.converters.ConverterException;
 import org.sql2o.quirks.NoQuirks;
 import org.sql2o.quirks.Quirks;
-import org.sql2o.Sql2o;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 
 public class H2Sql2oHelper {
 

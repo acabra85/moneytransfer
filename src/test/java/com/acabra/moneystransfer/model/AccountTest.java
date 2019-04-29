@@ -1,6 +1,7 @@
 package com.acabra.moneystransfer.model;
 
-import com.acabra.moneytransfer.exception.InvalidOperationException;
+import com.acabra.moneytransfer.exception.InsufficientFundsException;
+import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import com.acabra.moneytransfer.model.Account;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,19 +10,19 @@ import java.math.BigDecimal;
 
 public class AccountTest {
 
-    @Test(expected = InvalidOperationException.class)
+    @Test(expected = InsufficientFundsException.class)
     public void should_fail_withdrawal_amount_greater_than_balance() {
         Account account = new Account(1);
         account.withdraw(BigDecimal.TEN);
     }
 
-    @Test(expected = InvalidOperationException.class)
+    @Test(expected = InvalidTransferAmountException.class)
     public void should_fail_deposit_negative_amount() {
         Account account = new Account(1);
         account.deposit(BigDecimal.valueOf(-1L));
     }
 
-    @Test(expected = InvalidOperationException.class)
+    @Test(expected = InvalidTransferAmountException.class)
     public void should_fail_deposit_zero() {
         Account account = new Account(1);
         account.deposit(BigDecimal.ZERO);
