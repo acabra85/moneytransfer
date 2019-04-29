@@ -5,8 +5,10 @@ import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,39 +32,62 @@ public class AccountDAOH2ImplTest {
 
     @Test
     public void should_create_account() {
+        //given
         BigDecimal initialAmount = BigDecimal.TEN;
+
+        //when
         Account account = underTest.createAccount(initialAmount);
+
+        //then
         Assert.assertEquals(initialAmount, account.getBalance());
     }
 
     @Test
     public void should_create_account_balance_zero() {
+        //given
         BigDecimal initialAmount = BigDecimal.valueOf(-1L);
+
+        //when
         Account account = underTest.createAccount(initialAmount);
+
+        //then
         Assert.assertEquals(BigDecimal.ZERO, account.getBalance());
     }
 
     @Test
     public void should_retrieve_account_by_id() {
+        //given
         BigDecimal initialAmount = BigDecimal.TEN;
         long accountId = underTest.createAccount(initialAmount).getId();
+
+        //when
         Account queryAccount = underTest.retrieveAccountById(accountId);
 
+        //then
         Assert.assertEquals(0, initialAmount.compareTo(queryAccount.getBalance()));
         Assert.assertEquals(accountId, queryAccount.getId());
     }
 
     @Test
     public void should_retrieve_created_accounts_with_initial_balance() {
+        //given
         BigDecimal initialAmount = BigDecimal.ONE;
         int expectedAccountSize = 3;
+
         for (int i = 0; i < expectedAccountSize; i++) {
             underTest.createAccount(initialAmount);
         }
+
+        //when
         List<Account> accounts = underTest.retrieveAllAccounts();
+
+        //then
         Assert.assertEquals(expectedAccountSize, accounts.size());
+        Set<Long> seenAccountIds = new HashSet<>();
         for (Account account : accounts) {
             Assert.assertEquals(0, initialAmount.compareTo(account.getBalance()));
+            Assert.assertFalse(seenAccountIds.contains(account.getId()));
+            seenAccountIds.add(account.getId());
         }
     }
 

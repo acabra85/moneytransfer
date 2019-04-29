@@ -19,6 +19,7 @@ public abstract class SimpleResponse implements Serializable {
         this.isFailure = isFailure;
     }
 
+    @JsonProperty("id")
     public long getId() {
         return id;
     }

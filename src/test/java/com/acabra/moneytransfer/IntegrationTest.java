@@ -8,7 +8,7 @@ public class IntegrationTest {
     @BeforeClass
     public static void setup() {
         RestAssured.port = 4567;
-        RestAssured.basePath = "/";
+        RestAssured.basePath = "/api";
         RestAssured.baseURI = "http://localhost";
         BankingApp.main();
     }

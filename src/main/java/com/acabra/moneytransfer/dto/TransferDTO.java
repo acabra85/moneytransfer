@@ -9,18 +9,18 @@ import java.util.Objects;
 
 public class TransferDTO {
 
-    public final long id;
-    public final LocalDateTime timestamp;
-    public final long sourceAccountId;
-    public final long destinationAccountId;
-    public final BigDecimal amount;
+    private final long id;
+    private final LocalDateTime timestamp;
+    private final long sourceAccountId;
+    private final long destinationAccountId;
+    private final BigDecimal amount;
 
     @JsonCreator
-    public TransferDTO(@JsonProperty("id") long id,
-                       @JsonProperty("timestamp") LocalDateTime timestamp,
-                       @JsonProperty("sourceAccountId") long sourceAccountId,
-                       @JsonProperty("destinationAccountId") long destinationAccountId,
-                       @JsonProperty("amount") BigDecimal amount) {
+    public TransferDTO(@JsonProperty(value = "id", required = true) long id,
+                       @JsonProperty(value = "timestamp", required = true) LocalDateTime timestamp,
+                       @JsonProperty(value = "sourceAccountId", required = true) long sourceAccountId,
+                       @JsonProperty(value = "destinationAccountId", required = true) long destinationAccountId,
+                       @JsonProperty(value = "amount", required = true) BigDecimal amount) {
         this.timestamp = timestamp;
         this.id = id;
         this.sourceAccountId = sourceAccountId;
@@ -30,6 +30,31 @@ public class TransferDTO {
 
     public static TransferDTO fromTransfer(Transfer transfer) {
         return new TransferDTO(transfer.id, transfer.timestamp, transfer.sourceAccountId, transfer.destinationAccountId, transfer.transferAmount);
+    }
+
+    @JsonProperty("id")
+    public long getId() {
+        return id;
+    }
+
+    @JsonProperty("timestamp")
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    @JsonProperty("sourceAccountId")
+    public long getSourceAccountId() {
+        return sourceAccountId;
+    }
+
+    @JsonProperty("destinationAccountId")
+    public long getDestinationAccountId() {
+        return destinationAccountId;
+    }
+
+    @JsonProperty("amount")
+    public BigDecimal getAmount() {
+        return amount;
     }
 
     @Override

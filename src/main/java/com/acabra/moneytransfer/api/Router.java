@@ -22,11 +22,10 @@ public class Router {
 
     private final Controller controller;
     private final Logger logger = LoggerFactory.getLogger(Router.class);
-    private final JsonHelper jsonHelper;
+    private final JsonHelper jsonHelper = JsonHelper.getInstance();
 
-    public Router(Controller controller, JsonHelper jsonHelper) {
+    public Router(Controller controller) {
         this.controller = controller;
-        this.jsonHelper = jsonHelper;
     }
 
     public void registerRoutes() {
@@ -75,10 +74,10 @@ public class Router {
         res.status(HttpStatus.BAD_REQUEST_400);
         String body = plainJsonMessage("failed unable to parse the object");
         try {
-            body = jsonHelper.toJson(new MessageResponse<>(controller.getCallId(), true, ex.getMessage(), null));
+            body = jsonHelper.toJson(new MessageResponse<>(controller.getCallId(), HttpStatus.BAD_REQUEST_400, true, ex.getMessage(), null));
             if (ex instanceof NoSuchElementException) {
                 res.status(HttpStatus.NOT_FOUND_404);
-                body = jsonHelper.toJson(new MessageResponse<>(controller.getCallId(), true, ex.getMessage(), null));
+                body = jsonHelper.toJson(new MessageResponse<>(controller.getCallId(), HttpStatus.NOT_FOUND_404, true, ex.getMessage(), null));
             }
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage(), e);

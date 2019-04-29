@@ -19,6 +19,10 @@ public class Transfer {
         this.transferAmount = transferAmount;
     }
 
+    public boolean involvesAccount(long accountId) {
+        return sourceAccountId == accountId || destinationAccountId == accountId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -37,13 +37,13 @@ public class TransferRequest {
     }
 
     public static TransferRequest fromDTO(TransferRequestDTO transferRequestDTO) {
-        if (BigDecimal.ZERO.compareTo(transferRequestDTO.amount) >= 0) {
+        if (BigDecimal.ZERO.compareTo(transferRequestDTO.getAmount()) >= 0) {
             throw new InvalidTransferAmountException("The transfer amount should be greater than zero");
         }
-        if (transferRequestDTO.sourceAccountId == transferRequestDTO.destinationAccountId) {
+        if (transferRequestDTO.getSourceAccountId() == transferRequestDTO.getDestinationAccountId()) {
             throw new InvalidDestinationAccountException("Destination account must be different than the source account");
         }
-        return new TransferRequest(transferRequestDTO.sourceAccountId, transferRequestDTO.destinationAccountId, transferRequestDTO.amount);
+        return new TransferRequest(transferRequestDTO.getSourceAccountId(), transferRequestDTO.getDestinationAccountId(), transferRequestDTO.getAmount());
     }
 
     @Override

@@ -54,6 +54,7 @@ public class TransferServiceImpl implements TransferService {
                     source.lock.unlock();
                 }
             }
+            return null;
         } catch (Exception e) {
             transferLock.rollback();
             logger.error(e.getMessage(), e);
@@ -61,7 +62,6 @@ public class TransferServiceImpl implements TransferService {
         } finally {
             transferLock.close();
         }
-        return null;
     }
 
     @Override

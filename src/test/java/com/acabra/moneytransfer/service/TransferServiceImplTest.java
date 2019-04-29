@@ -11,9 +11,8 @@ import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Executors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,19 +47,19 @@ public class TransferServiceImplTest {
         BigDecimal transferAmount = new BigDecimal("100");
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
-        List<Transfer> transfers = Collections.singletonList(new Transfer(1L, NOW, sourceAccount.getId(), destinationAccount.getId(), transferAmount));
+        Transfer internalTransfer = new Transfer(1L, NOW, sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
         Mockito.when(accountDAOMock.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId()))
                 .thenReturn(accountsTransferLockMock);
         Mockito.when(accountsTransferLockMock.getSourceAccount()).thenReturn(sourceAccount);
         Mockito.when(accountsTransferLockMock.getDestinationAccount()).thenReturn(destinationAccount);
-        Mockito.when(transferDAOMock.storeTransferAndCommitTransactional(any(), any())).thenReturn(transfers.get(0));
+        Mockito.when(transferDAOMock.storeTransferAndCommitTransactional(any(), any())).thenReturn(internalTransfer);
 
         //when
         Transfer transfer = underTest.transfer(transferRequest);
 
         //then
-        Assert.assertEquals(transfer.id, transfers.get(0).id);
+        Assert.assertEquals(transfer.id, internalTransfer.id);
         Assert.assertEquals(0, sourceAccount.getBalance().compareTo(new BigDecimal("100")));
         Assert.assertEquals(0, destinationAccount.getBalance().compareTo(new BigDecimal("150")));
 
@@ -99,7 +98,7 @@ public class TransferServiceImplTest {
     }
 
     @Test(expected = InvalidDestinationAccountException.class)
-    public void should_fail_source_and_destination_account_are_the_same() {
+    public void should_fail_transfer_source_and_destination_account_are_the_same() {
         //given
         TransferRequest transferRequestMock = Mockito.mock(TransferRequest.class);
 
@@ -112,7 +111,7 @@ public class TransferServiceImplTest {
     }
 
     @Test(expected = NoSuchElementException.class)
-    public void should_fail_non_existent_accounts() {
+    public void should_fail_transfer_non_existent_accounts() {
         //given
         Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenThrow(NoSuchElementException.class);
 
@@ -121,4 +120,61 @@ public class TransferServiceImplTest {
 
         //then
     }
+
+    @Test
+    public void should_fail_transfer_unable_to_obtain_account_lock_on_source_account() {
+        //given
+        Account sourceAccount = new Account(1L, BigDecimal.TEN);
+        Account destinationAccount = new Account(2L, BigDecimal.TEN);
+        AccountsTransferLock lock = Mockito.mock(AccountsTransferLock.class);
+
+        Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenReturn(lock);
+        Mockito.when(lock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(lock.getDestinationAccount()).thenReturn(destinationAccount);
+
+        //lock the source account on a different thread
+        Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(sourceAccount));
+
+        //when
+        Transfer transfer = underTest.transfer(new TransferRequest(1L, 2L, BigDecimal.TEN));
+
+        //then
+        Assert.assertNull(transfer);
+    }
+
+    @Test
+    public void should_fail_transfer_unable_to_obtain_account_lock_on_destination_account() {
+        //given
+        Account sourceAccount = new Account(3L, BigDecimal.TEN);
+        Account destinationAccount = new Account(6L, BigDecimal.TEN);
+        AccountsTransferLock lock = Mockito.mock(AccountsTransferLock.class);
+
+        Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenReturn(lock);
+        Mockito.when(lock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(lock.getDestinationAccount()).thenReturn(destinationAccount);
+
+        //lock the source account on a different thread
+        Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(destinationAccount));
+
+        //when
+        Transfer transfer = underTest.transfer(new TransferRequest(1L, 2L, BigDecimal.TEN));
+
+        //then
+        Assert.assertNull(transfer);
+    }
+
+    private Runnable acquireLockOnDifferentThread(Account accountToLock) {
+        return () -> {
+            accountToLock.lock.lock();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                accountToLock.lock.unlock();
+            }
+        };
+    }
+
+
 }

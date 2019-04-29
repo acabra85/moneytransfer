@@ -21,8 +21,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account retrieveAccountById(Long accountId) {
         if (null == accountId) return null;
-        Account account = accountDao.retrieveAccountById(accountId);
-        return account;
+        return accountDao.retrieveAccountById(accountId);
     }
 
     @Override

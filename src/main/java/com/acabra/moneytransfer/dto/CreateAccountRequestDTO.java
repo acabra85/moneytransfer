@@ -11,10 +11,11 @@ public class CreateAccountRequestDTO {
     private final BigDecimal initialBalance;
 
     @JsonCreator
-    public CreateAccountRequestDTO(@JsonProperty("initialBalance") BigDecimal initialBalance) {
+    public CreateAccountRequestDTO(@JsonProperty(value = "initialBalance", required = true) BigDecimal initialBalance) {
         this.initialBalance = initialBalance;
     }
 
+    @JsonProperty("initialBalance")
     public BigDecimal getInitialBalance() {
         return initialBalance;
     }

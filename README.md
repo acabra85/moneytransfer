@@ -39,6 +39,7 @@ Every response is a JSON object with the following format:
 ```json 
 {
     id: #identifier of the response,
+    statusCode: http status code of the respose,
     isFailure: a boolean denoting if the call failed
     message: a description of the response
     body: The object response for successful requests.

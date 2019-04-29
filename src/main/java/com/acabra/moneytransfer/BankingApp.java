@@ -7,7 +7,10 @@ import com.acabra.moneytransfer.dao.TransferDAO;
 import com.acabra.moneytransfer.dao.h2.AccountDAOH2Impl;
 import com.acabra.moneytransfer.dao.h2.H2Sql2oHelper;
 import com.acabra.moneytransfer.dao.h2.TransferDAOH2Impl;
-import com.acabra.moneytransfer.utils.JsonHelper;
+import com.acabra.moneytransfer.service.AccountService;
+import com.acabra.moneytransfer.service.AccountServiceImpl;
+import com.acabra.moneytransfer.service.TransferService;
+import com.acabra.moneytransfer.service.TransferServiceImpl;
 import org.sql2o.Sql2o;
 
 public class BankingApp {
@@ -22,10 +25,11 @@ public class BankingApp {
     public BankingApp () {
         Sql2o sql2o = H2Sql2oHelper.ofLocalKeepOpenSql2o(); //BD Connection
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
-        TransferDAO TransferDAO = new TransferDAOH2Impl(sql2o);
-        JsonHelper jsonHelper = JsonHelper.getInstance();
-        Controller controller = new Controller(accountDAO, TransferDAO, jsonHelper);
-        this.router = new Router(controller, jsonHelper);
+        TransferDAO transferDAO = new TransferDAOH2Impl(sql2o);
+        TransferService transferService = new TransferServiceImpl(transferDAO, accountDAO);
+        AccountService accountService = new AccountServiceImpl(accountDAO);
+        Controller controller = new Controller(accountService, transferService);
+        this.router = new Router(controller);
     }
 
     private void start() {

@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -46,63 +45,90 @@ public class TransferDAOH2ImplTest {
     @Test
     public void should_return_persisted_transaction() {
         //given
+        BigDecimal transferAmount = BigDecimal.TEN;
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
         Account sourceAccount = accountDAO.createAccount(BigDecimal.TEN);
         Account destinationAccount = accountDAO.createAccount(BigDecimal.ZERO);
-        TransferRequest transferRequestMock = Mockito.mock(TransferRequest.class);
+        TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
-        BigDecimal transferAmount = BigDecimal.TEN;
         Connection tx = sql2o.beginTransaction();
 
-        Mockito.when(transferRequestMock.getTransferAmount()).thenReturn(transferAmount);
-        Mockito.when(transferRequestMock.getSourceAccountId()).thenReturn(sourceAccount.getId());
-        Mockito.when(transferRequestMock.getDestinationAccountId()).thenReturn(destinationAccount.getId());
-        Mockito.when(transferRequestMock.getTimestamp()).thenReturn(NOW);
-
         //when
-        Transfer executedTransfer = underTest.storeTransferAndCommitTransactional(transferRequestMock, tx);
+        Transfer executedTransfer = underTest.storeTransferAndCommitTransactional(transferRequest, tx);
 
         //then
         Assert.assertEquals(sourceAccount.getId(), executedTransfer.sourceAccountId);
         Assert.assertEquals(destinationAccount.getId(), executedTransfer.destinationAccountId);
         Assert.assertEquals(transferAmount, executedTransfer.transferAmount);
-        Assert.assertEquals(NOW, executedTransfer.timestamp);
+        Assert.assertTrue(NOW.compareTo(executedTransfer.timestamp) < 0);
     }
 
     @Test
-    public void should_retrieve_transfers() {
+    public void should_retrieve_transfers_by_id() {
         //given
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
-        BigDecimal sourceAccountInitialBalance = new BigDecimal("50");
-        Account sourceAccount = accountDAO.createAccount(sourceAccountInitialBalance);
-        Account destinationAccount = accountDAO.createAccount(BigDecimal.ZERO);
-        TransferRequest transferRequestMock = Mockito.mock(TransferRequest.class);
+        Account accountA = accountDAO.createAccount(new BigDecimal("50"));
+        Account accountB = accountDAO.createAccount(BigDecimal.ZERO);
+        Account accountC = accountDAO.createAccount(BigDecimal.ZERO);
+        TransferRequest transferFromAtoB = new TransferRequest(accountA.getId(), accountB.getId(), BigDecimal.TEN);
+        TransferRequest transferFromBtoC = new TransferRequest(accountB.getId(), accountC.getId(), new BigDecimal("7.5"));
+        TransferRequest transferFromCtoA = new TransferRequest(accountC.getId(), accountA.getId(), new BigDecimal("5"));
 
-        BigDecimal transferAmount = BigDecimal.TEN;
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
 
-        Mockito.when(transferRequestMock.getTransferAmount()).thenReturn(transferAmount);
-        Mockito.when(transferRequestMock.getSourceAccountId()).thenReturn(sourceAccount.getId());
-        Mockito.when(transferRequestMock.getDestinationAccountId()).thenReturn(destinationAccount.getId());
-        Mockito.when(transferRequestMock.getTimestamp()).thenReturn(NOW);
-        int transferCount = 5;
+        underTest.storeTransferAndCommitTransactional(transferFromBtoC, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromBtoC, sql2o.beginTransaction());
 
-        //deplete
-        for (int i = 0; i < transferCount; i++) {
-            underTest.storeTransferAndCommitTransactional(transferRequestMock, sql2o.beginTransaction());
-        }
+        underTest.storeTransferAndCommitTransactional(transferFromCtoA, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromCtoA, sql2o.beginTransaction());
 
         //when
-        List<Transfer> executedTransfers = underTest.retrieveTransfersByAccountId(sourceAccount.getId());
+        List<Transfer> transfersAccountA = underTest.retrieveTransfersByAccountId(accountA.getId());
+        List<Transfer> transfersAccountB = underTest.retrieveTransfersByAccountId(accountB.getId());
+        List<Transfer> transfersAccountC = underTest.retrieveTransfersByAccountId(accountC.getId());
 
         //then
-        Assert.assertEquals(transferCount, executedTransfers.size());
+        Assert.assertEquals(6, transfersAccountA.stream()
+                .filter(tfx -> tfx.involvesAccount(accountA.getId()))
+                .count());
+        Assert.assertEquals(6, transfersAccountB.stream()
+                .filter(tfx -> tfx.involvesAccount(accountB.getId()))
+                .count());
+        Assert.assertEquals(4, transfersAccountC.stream()
+                .filter(tfx -> tfx.involvesAccount(accountC.getId()))
+                .count());
+    }
 
-        for (Transfer executedTransfer : executedTransfers) {
-            Assert.assertEquals(0, transferAmount.compareTo(executedTransfer.transferAmount));
-            Assert.assertEquals(sourceAccount.getId(), executedTransfer.sourceAccountId);
-            Assert.assertEquals(destinationAccount.getId(), executedTransfer.destinationAccountId);
-            Assert.assertEquals(NOW, executedTransfer.timestamp);
-        }
+    @Test
+    public void should_retrieve_all_transfers() {
+        //given
+        AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
+        Account accountA = accountDAO.createAccount(new BigDecimal("50"));
+        Account accountB = accountDAO.createAccount(BigDecimal.ZERO);
+        Account accountC = accountDAO.createAccount(BigDecimal.ZERO);
+        TransferRequest transferFromAtoB = new TransferRequest(accountA.getId(), accountB.getId(), BigDecimal.TEN);
+        TransferRequest transferFromBtoC = new TransferRequest(accountB.getId(), accountC.getId(), new BigDecimal("7.5"));
+        TransferRequest transferFromCtoA = new TransferRequest(accountC.getId(), accountA.getId(), new BigDecimal("5"));
 
+
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromAtoB, sql2o.beginTransaction());
+
+        underTest.storeTransferAndCommitTransactional(transferFromBtoC, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromBtoC, sql2o.beginTransaction());
+
+        underTest.storeTransferAndCommitTransactional(transferFromCtoA, sql2o.beginTransaction());
+        underTest.storeTransferAndCommitTransactional(transferFromCtoA, sql2o.beginTransaction());
+
+        //when
+        List<Transfer> allTransfers = underTest.retrieveAllTransfers();
+
+        //then
+        Assert.assertEquals(8, allTransfers.size());
     }
 }
