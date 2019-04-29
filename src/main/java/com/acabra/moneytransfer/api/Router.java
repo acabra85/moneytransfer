@@ -1,8 +1,9 @@
 package com.acabra.moneytransfer.api;
 
-import com.google.gson.Gson;
 import com.acabra.moneytransfer.control.Controller;
 import com.acabra.moneytransfer.response.MessageResponse;
+import com.acabra.moneytransfer.utils.JsonHelper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.NoSuchElementException;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.MimeTypes;
@@ -21,11 +22,11 @@ public class Router {
 
     private final Controller controller;
     private final Logger logger = LoggerFactory.getLogger(Router.class);
-    private final Gson gson;
+    private final JsonHelper jsonHelper;
 
-    public Router(Controller controller, Gson gson) {
+    public Router(Controller controller, JsonHelper jsonHelper) {
         this.controller = controller;
-        this.gson = gson;
+        this.jsonHelper = jsonHelper;
     }
 
     public void registerRoutes() {
@@ -33,24 +34,24 @@ public class Router {
         path("/api", () -> {
 
             path("/accounts", () -> {
-                post("/new", controller::createAccount, gson::toJson);
+                post("/new", controller::createAccount, jsonHelper::toJson);
 
                 path("/:accountId", () -> {
-                    get("", controller::getAccountById, gson::toJson);
+                    get("", controller::getAccountById, jsonHelper::toJson);
 
-                    get("/transfers", controller::retrieveTransfersByAccountId, gson::toJson);
+                    get("/transfers", controller::retrieveTransfersByAccountId, jsonHelper::toJson);
                 });
 
-                get("", controller::getAccounts, gson::toJson);
-                get("/", controller::getAccounts, gson::toJson);
+                get("", controller::getAccounts, jsonHelper::toJson);
+                get("/", controller::getAccounts, jsonHelper::toJson);
             });
 
             path("/transfers", () -> {
-                post("/new", controller::transfer, gson::toJson);
+                post("/new", controller::transfer, jsonHelper::toJson);
 
-                get("", controller::getTransfers, gson::toJson);
+                get("", controller::getTransfers, jsonHelper::toJson);
 
-                get("/:accountId", controller::retrieveTransfersByAccountId, gson::toJson);
+                get("/:accountId", controller::retrieveTransfersByAccountId, jsonHelper::toJson);
             });
 
         });
@@ -64,7 +65,7 @@ public class Router {
         internalServerError((req, res) -> {
             res.type(MimeTypes.Type.APPLICATION_JSON_UTF_8.toString());
             logger.error("internal server error {} {} ", req.requestMethod(), req.uri());
-            return "{\"message\":\"We are sorry.\"}";
+            return plainJsonMessage("We are sorry.");
         });
 
         after(((request, response) -> response.type(MimeTypes.Type.APPLICATION_JSON_UTF_8.toString())));
@@ -72,11 +73,20 @@ public class Router {
 
     private void processResponseException(Exception ex, Response res) {
         res.status(HttpStatus.BAD_REQUEST_400);
-        String body = gson.toJson(new MessageResponse<>(controller.getCallId(), true, ex.getMessage(), null));
-        if (ex instanceof NoSuchElementException) {
-            res.status(HttpStatus.NOT_FOUND_404);
-            body = gson.toJson(new MessageResponse<>(controller.getCallId(), true, ex.getMessage(), null));
+        String body = plainJsonMessage("failed unable to parse the object");
+        try {
+            body = jsonHelper.toJson(new MessageResponse<>(controller.getCallId(), true, ex.getMessage(), null));
+            if (ex instanceof NoSuchElementException) {
+                res.status(HttpStatus.NOT_FOUND_404);
+                body = jsonHelper.toJson(new MessageResponse<>(controller.getCallId(), true, ex.getMessage(), null));
+            }
+        } catch (JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
         }
         res.body(body);
+    }
+
+    private String plainJsonMessage(String message) {
+        return String.format("{\"message\":\"%s\"}", message);
     }
 }

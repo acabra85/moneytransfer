@@ -1,18 +1,26 @@
 package com.acabra.moneytransfer.dto;
 
 import com.acabra.moneytransfer.model.Transfer;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class TransferDTO {
+
     public final long id;
     public final LocalDateTime timestamp;
     public final long sourceAccountId;
     public final long destinationAccountId;
     public final BigDecimal amount;
 
-    public TransferDTO(long id, LocalDateTime timestamp, long sourceAccountId, long destinationAccountId, BigDecimal amount) {
+    @JsonCreator
+    public TransferDTO(@JsonProperty("id") long id,
+                       @JsonProperty("timestamp") LocalDateTime timestamp,
+                       @JsonProperty("sourceAccountId") long sourceAccountId,
+                       @JsonProperty("destinationAccountId") long destinationAccountId,
+                       @JsonProperty("amount") BigDecimal amount) {
         this.timestamp = timestamp;
         this.id = id;
         this.sourceAccountId = sourceAccountId;

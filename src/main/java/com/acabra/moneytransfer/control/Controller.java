@@ -1,7 +1,5 @@
 package com.acabra.moneytransfer.control;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.TransferDAO;
 import com.acabra.moneytransfer.dto.AccountDTO;
@@ -16,7 +14,8 @@ import com.acabra.moneytransfer.service.AccountService;
 import com.acabra.moneytransfer.service.AccountServiceImpl;
 import com.acabra.moneytransfer.service.TransferService;
 import com.acabra.moneytransfer.service.TransferServiceImpl;
-import java.math.BigDecimal;
+import com.acabra.moneytransfer.utils.JsonHelper;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -30,35 +29,40 @@ public class Controller {
 
     private final TransferService transferService;
     private final AccountService accountService;
-    private final Gson gson;
+    private final JsonHelper jsonHelper;
     private AtomicLong callCounter = new AtomicLong();
 
     private static Logger log = LoggerFactory.getLogger(Controller.class);
 
-    public Controller(AccountDAO accountDAO, TransferDAO transferDAO, Gson gson) {
+    public Controller(AccountDAO accountDAO, TransferDAO transferDAO, JsonHelper jsonHelper) {
         this.accountService = new AccountServiceImpl(accountDAO);
+        this.jsonHelper = jsonHelper;
         this.transferService = new TransferServiceImpl(transferDAO, accountDAO);
-        this.gson = gson;
     }
 
     public MessageResponse createAccount(Request request, Response response) {
-        CreateAccountRequestDTO createAccountRequestDTO;
         try {
-            createAccountRequestDTO = gson.fromJson(request.body(), CreateAccountRequestDTO.class);
-        } catch (JsonSyntaxException jse) {
-            log.error(jse.getMessage(), jse);
-            createAccountRequestDTO = new CreateAccountRequestDTO(BigDecimal.ZERO);
+            CreateAccountRequestDTO createAccountRequestDTO = jsonHelper.fromJson(request.body(), CreateAccountRequestDTO.class);
+            AccountDTO accountDTO = AccountDTO.fromAccount(accountService.createAccount(createAccountRequestDTO.getInitialBalance()));
+            response.status(HttpStatus.CREATED_201);
+            return new MessageResponse<>(getCallId(), false, "Success: Account Created", accountDTO);
+        } catch (IOException e) {
+            MessageResponse badRequestResponse = badRequestResponse(response, "Failed to create the account {malformed json object}: " + request.body());
+            log.error(e.getMessage() + " " + badRequestResponse.getMessage(), e);
+            return badRequestResponse;
         }
-        AccountDTO accountDTO = AccountDTO.fromAccount(accountService.createAccount(createAccountRequestDTO.getInitialBalance()));
-        response.status(HttpStatus.CREATED_201);
-        return new MessageResponse<>(getCallId(), false, "Success", accountDTO);
     }
 
     public MessageResponse getAccountById(Request request, Response response) {
-        Account account = accountService.retrieveAccountById(asLong(request.params(":accountId")));
+        Long accountId = asLong(request.params(":accountId"));
+        if (null == accountId) {
+            response.status(HttpStatus.NOT_FOUND_404);
+            return new MessageResponse<>(getCallId(), true, "Could not find account with the given id: " + request.params(":accountId"), null);
+        }
+        Account account = accountService.retrieveAccountById(accountId);
         if (account == null) {
             response.status(HttpStatus.NOT_FOUND_404);
-            MessageResponse<Object> objectMessageResponse = new MessageResponse<>(getCallId(), true, "Could not find account with the given id: " + request.params(":accountId"), null);
+            MessageResponse objectMessageResponse = new MessageResponse<>(getCallId(), false, "Could not find account with the given id: " + request.params(":accountId"), null);
             log.info(objectMessageResponse.getMessage());
             return objectMessageResponse;
         }
@@ -75,12 +79,12 @@ public class Controller {
     public MessageResponse transfer(Request request, Response response) {
         TransferRequestDTO transferRequestDTO;
         try {
-            transferRequestDTO = gson.fromJson(request.body(), TransferRequestDTO.class);
-        } catch (JsonSyntaxException jse) {
-            response.status(HttpStatus.BAD_REQUEST_400);
-            MessageResponse<Object> failTransferResponse = new MessageResponse<>(getCallId(), true, "Failed to fulfill the transfer {malformed json object}: " + request.body(),     null);
-            log.error(jse.getMessage(), jse);
-            return failTransferResponse;
+            transferRequestDTO = jsonHelper.fromJson(request.body(), TransferRequestDTO.class);
+        } catch (IOException ioe) {
+            String extendedMessage = "Failed to fulfill the transfer {malformed json object}: " + request.body();
+            MessageResponse badRequestResponse = badRequestResponse(response, extendedMessage);
+            log.error(ioe.getMessage() + " " + badRequestResponse.getMessage(), ioe);
+            return badRequestResponse;
         }
         TransferRequest transferRequest = TransferRequest.fromDTO(transferRequestDTO);
         response.status(HttpStatus.CREATED_201);
@@ -114,6 +118,10 @@ public class Controller {
         return new MessageResponse<>(getCallId(), false, "Success", transfers);
     }
 
+    public long getCallId() {
+        return this.callCounter.getAndIncrement();
+    }
+
     private Long asLong(String asString) {
         try {
             return Long.parseLong(asString);
@@ -122,7 +130,9 @@ public class Controller {
         }
     }
 
-    public long getCallId() {
-        return this.callCounter.getAndIncrement();
+    private MessageResponse badRequestResponse(Response response, String extendedMessage) {
+        response.status(HttpStatus.BAD_REQUEST_400);
+        MessageResponse<Object> failTransferResponse = new MessageResponse<>(getCallId(), true, extendedMessage, null);
+        return failTransferResponse;
     }
 }

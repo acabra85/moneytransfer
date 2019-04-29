@@ -60,7 +60,7 @@
 					"response": []
 				},
 				{
-					"name": "Create New Acount",
+					"name": "Create New Account",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -73,7 +73,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\tinitialBalance: 50.00\n}"
+							"raw": "{\n\t\"initialBalance\": 50.00\n}"
 						},
 						"url": {
 							"raw": "{{url}}/api/accounts/new",
@@ -189,7 +189,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\tsourceAccountId: 1,\n\tdestinationAccountId: 2,\n\tamount: 5.00\n}"
+							"raw": "{\n\t\"sourceAccountId\": 1,\n\t\"destinationAccountId\": 2,\n\t\"amount\": 5.00\n}"
 						},
 						"url": {
 							"raw": "{{url}}/api/transfers/new",
