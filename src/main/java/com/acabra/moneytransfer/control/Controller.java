@@ -38,7 +38,7 @@ public class Controller {
     public MessageResponse<AccountDTO> createAccount(Request request, Response response) {
         try {
             CreateAccountRequestDTO createAccountRequestDTO = jsonHelper.fromJson(request.body(), CreateAccountRequestDTO.class);
-            AccountDTO accountDTO = AccountDTO.fromAccount(accountService.createAccount(createAccountRequestDTO.getInitialBalance()));
+            AccountDTO accountDTO = accountService.createAccount(createAccountRequestDTO.getInitialBalance());
             response.status(HttpStatus.CREATED_201);
             return new MessageResponse<>(getCallId(), HttpStatus.CREATED_201, false, "Success: Account Created", accountDTO);
         } catch (IOException e) {
@@ -54,21 +54,18 @@ public class Controller {
             response.status(HttpStatus.BAD_REQUEST_400);
             return new MessageResponse<>(getCallId(), HttpStatus.BAD_REQUEST_400, true, "Could not find account with the given invalid id: " + request.params(":accountId"), null);
         }
-        Account account = accountService.retrieveAccountById(accountId);
+        AccountDTO account = accountService.retrieveAccountById(accountId);
         if (account == null) {
             response.status(HttpStatus.NOT_FOUND_404);
             MessageResponse objectMessageResponse = new MessageResponse<>(getCallId(), HttpStatus.NOT_FOUND_404 , false, "Could not find account with the given id: " + request.params(":accountId"), null);
             log.info(objectMessageResponse.getMessage());
             return objectMessageResponse;
         }
-        return new MessageResponse<>(getCallId(), HttpStatus.OK_200, false, "Success", AccountDTO.fromAccount(account));
+        return new MessageResponse<>(getCallId(), HttpStatus.OK_200, false, "Success", account);
     }
 
     public MessageResponse<List<AccountDTO>> getAccounts(Request request, Response response) {
-        List<AccountDTO> collect = accountService.retrieveAccounts()
-                .stream().map(AccountDTO::fromAccount)
-                .collect(Collectors.toList());
-        return new MessageResponse<>(getCallId(), HttpStatus.OK_200, false, "Success", collect);
+        return new MessageResponse<>(getCallId(), HttpStatus.OK_200, false, "Success", accountService.retrieveAccounts());
     }
 
     public MessageResponse<TransferDTO> transfer(Request request, Response response) {

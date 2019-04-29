@@ -10,12 +10,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TransferDAOH2ImplTest {
 
     public Sql2o sql2o;

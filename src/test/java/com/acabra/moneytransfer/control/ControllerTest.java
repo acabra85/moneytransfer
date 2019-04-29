@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,11 +54,10 @@ public class ControllerTest {
     public void should_create_account() throws JsonProcessingException {
         //given
         String reqBody = jsonHelper.toJson(new CreateAccountRequestDTO(BigDecimal.TEN));
-        Account expectedAccount = new Account(0L, BigDecimal.TEN);
         AccountDTO expectedAccountDTO = AccountDTO.fromAccount(new Account(0L, BigDecimal.TEN));
 
         Mockito.when(req.body()).thenReturn(reqBody);
-        Mockito.when(accountService.createAccount(BigDecimal.TEN)).thenReturn(expectedAccount);
+        Mockito.when(accountService.createAccount(BigDecimal.TEN)).thenReturn(expectedAccountDTO);
 
         //when
         MessageResponse<AccountDTO> accountCreateResponse = underTest.createAccount(req, resp);
@@ -116,7 +116,7 @@ public class ControllerTest {
     @Test
     public void should_return_account_for_given_id() {
         //given
-        Account existentAccount = new Account(1L, BigDecimal.TEN);
+        AccountDTO existentAccount = AccountDTO.fromAccount(new Account(1L, BigDecimal.TEN));
         String existentAccountIdParam = Long.toString(existentAccount.getId());
 
         Mockito.when(req.params(":accountId")).thenReturn(existentAccountIdParam);
@@ -154,7 +154,7 @@ public class ControllerTest {
             add(new Account(3L, BigDecimal.ZERO));
         }};
 
-        Mockito.when(accountService.retrieveAccounts()).thenReturn(createdAccounts);
+        Mockito.when(accountService.retrieveAccounts()).thenReturn(createdAccounts.stream().map(AccountDTO::fromAccount).collect(Collectors.toList()));
 
         //when
         MessageResponse<List<AccountDTO>> accountsResponse = underTest.getAccounts(req, resp);

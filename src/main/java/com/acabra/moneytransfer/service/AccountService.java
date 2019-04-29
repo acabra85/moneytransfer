@@ -1,14 +1,14 @@
 package com.acabra.moneytransfer.service;
 
-import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.dto.AccountDTO;
 import java.math.BigDecimal;
 import java.util.List;
 
 public interface AccountService {
 
-    Account createAccount(BigDecimal amount);
+    AccountDTO createAccount(BigDecimal amount);
 
-    Account retrieveAccountById(Long accountId);
+    AccountDTO retrieveAccountById(Long accountId);
 
-    List<Account> retrieveAccounts();
+    List<AccountDTO> retrieveAccounts();
 }

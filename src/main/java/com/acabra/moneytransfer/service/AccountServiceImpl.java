@@ -1,9 +1,10 @@
 package com.acabra.moneytransfer.service;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
-import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.dto.AccountDTO;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AccountServiceImpl implements AccountService {
 
@@ -14,18 +15,20 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account createAccount(BigDecimal amount) {
-        return accountDao.createAccount(amount == null ? BigDecimal.ZERO : amount);
+    public AccountDTO createAccount(BigDecimal amount) {
+        return AccountDTO.fromAccount(accountDao.createAccount(amount == null ? BigDecimal.ZERO : amount));
     }
 
     @Override
-    public Account retrieveAccountById(Long accountId) {
+    public AccountDTO retrieveAccountById(Long accountId) {
         if (null == accountId) return null;
-        return accountDao.retrieveAccountById(accountId);
+        return AccountDTO.fromAccount(accountDao.retrieveAccountById(accountId));
     }
 
     @Override
-    public List<Account> retrieveAccounts() {
-        return accountDao.retrieveAllAccounts();
+    public List<AccountDTO> retrieveAccounts() {
+        return accountDao.retrieveAllAccounts().stream()
+                .map(AccountDTO::fromAccount)
+                .collect(Collectors.toList());
     }
 }
