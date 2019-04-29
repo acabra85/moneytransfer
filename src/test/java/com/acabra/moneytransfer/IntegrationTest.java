@@ -1,6 +1,5 @@
-package com.acabra.moneystransfer;
+package com.acabra.moneytransfer;
 
-import com.acabra.moneytransfer.BankingApp;
 import io.restassured.RestAssured;
 import org.junit.BeforeClass;
 

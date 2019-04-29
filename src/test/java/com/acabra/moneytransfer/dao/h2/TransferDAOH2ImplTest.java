@@ -1,9 +1,6 @@
-package com.acabra.moneystransfer.dao.h2;
+package com.acabra.moneytransfer.dao.h2;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
-import com.acabra.moneytransfer.dao.h2.AccountDAOH2Impl;
-import com.acabra.moneytransfer.dao.h2.H2Sql2oHelper;
-import com.acabra.moneytransfer.dao.h2.TransferDAOH2Impl;
 import com.acabra.moneytransfer.model.Account;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;

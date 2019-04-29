@@ -1,4 +1,4 @@
-package com.acabra.moneystransfer;
+package com.acabra.moneytransfer;
 
 import org.junit.Test;
 

@@ -1,16 +1,14 @@
-package com.acabra.moneystransfer.service;
+package com.acabra.moneytransfer.service;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.dao.TransferDAO;
 import com.acabra.moneytransfer.exception.InsufficientFundsException;
 import com.acabra.moneytransfer.exception.InvalidDestinationAccountException;
-import com.acabra.moneytransfer.exception.InvalidOperationException;
 import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import com.acabra.moneytransfer.model.Account;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
-import com.acabra.moneytransfer.service.TransferServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;

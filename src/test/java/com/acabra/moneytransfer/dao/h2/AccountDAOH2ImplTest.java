@@ -1,9 +1,7 @@
-package com.acabra.moneystransfer.dao.h2;
+package com.acabra.moneytransfer.dao.h2;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
-import com.acabra.moneytransfer.dao.h2.AccountDAOH2Impl;
-import com.acabra.moneytransfer.dao.h2.H2Sql2oHelper;
 import com.acabra.moneytransfer.model.Account;
 import java.math.BigDecimal;
 import java.util.ArrayList;

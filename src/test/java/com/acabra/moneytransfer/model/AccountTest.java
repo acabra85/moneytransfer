@@ -1,8 +1,7 @@
-package com.acabra.moneystransfer.model;
+package com.acabra.moneytransfer.model;
 
 import com.acabra.moneytransfer.exception.InsufficientFundsException;
 import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
-import com.acabra.moneytransfer.model.Account;
 import org.junit.Assert;
 import org.junit.Test;
 
