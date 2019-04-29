@@ -41,7 +41,7 @@ public class ControllerTest {
     AccountService accountService;
 
     @InjectMocks
-    Controller under_test;
+    Controller underTest;
 
     Request req = Mockito.mock(Request.class);
     Response resp = Mockito.mock(Response.class);
@@ -60,7 +60,7 @@ public class ControllerTest {
         Mockito.when(accountService.createAccount(BigDecimal.TEN)).thenReturn(expectedAccount);
 
         //when
-        MessageResponse<AccountDTO> accountCreateResponse = under_test.createAccount(req, resp);
+        MessageResponse<AccountDTO> accountCreateResponse = underTest.createAccount(req, resp);
 
         //then
         Assert.assertFalse(accountCreateResponse.isFailure());
@@ -76,7 +76,7 @@ public class ControllerTest {
         Mockito.when(req.body()).thenReturn(reqBody);
 
         //when
-        MessageResponse accountCreateResponse = under_test.createAccount(req, resp);
+        MessageResponse accountCreateResponse = underTest.createAccount(req, resp);
 
         //then
         Assert.assertTrue(accountCreateResponse.isFailure());
@@ -91,7 +91,7 @@ public class ControllerTest {
         Mockito.when(req.params(":accountId")).thenReturn(invalidId);
 
         //when
-        MessageResponse accountCreateResponse = under_test.getAccountById(req, resp);
+        MessageResponse accountCreateResponse = underTest.getAccountById(req, resp);
 
         //then
         Assert.assertTrue(accountCreateResponse.isFailure());
@@ -106,7 +106,7 @@ public class ControllerTest {
         Mockito.when(req.params(":accountId")).thenReturn(nonExistentAccountId);
 
         //when
-        MessageResponse<AccountDTO> accountCreateResponse = under_test.getAccountById(req, resp);
+        MessageResponse<AccountDTO> accountCreateResponse = underTest.getAccountById(req, resp);
 
         //then
         Assert.assertFalse(accountCreateResponse.isFailure());
@@ -123,7 +123,7 @@ public class ControllerTest {
         Mockito.when(accountService.retrieveAccountById(existentAccount.getId())).thenReturn(existentAccount);
 
         //when
-        MessageResponse<AccountDTO> accountCreateResponse = under_test.getAccountById(req, resp);
+        MessageResponse<AccountDTO> accountCreateResponse = underTest.getAccountById(req, resp);
 
         //then
         Assert.assertFalse(accountCreateResponse.isFailure());
@@ -136,7 +136,7 @@ public class ControllerTest {
         Mockito.when(accountService.retrieveAccounts()).thenReturn(Collections.emptyList());
 
         //when
-        MessageResponse<List<AccountDTO>> accountsResponse = under_test.getAccounts(req, resp);
+        MessageResponse<List<AccountDTO>> accountsResponse = underTest.getAccounts(req, resp);
 
         //then
         Assert.assertFalse(accountsResponse.isFailure());
@@ -157,7 +157,7 @@ public class ControllerTest {
         Mockito.when(accountService.retrieveAccounts()).thenReturn(createdAccounts);
 
         //when
-        MessageResponse<List<AccountDTO>> accountsResponse = under_test.getAccounts(req, resp);
+        MessageResponse<List<AccountDTO>> accountsResponse = underTest.getAccounts(req, resp);
 
         //then
         for (int i = 0; i < createdAccounts.size(); i++) {
@@ -174,7 +174,7 @@ public class ControllerTest {
         Mockito.when(transferService.retrieveAllTransfers()).thenReturn(Collections.emptyList());
 
         //when
-        MessageResponse<List<TransferDTO>> transfersResponse = under_test.getTransfers(req, resp);
+        MessageResponse<List<TransferDTO>> transfersResponse = underTest.getTransfers(req, resp);
 
         //then
         Assert.assertFalse(transfersResponse.isFailure());
@@ -189,7 +189,7 @@ public class ControllerTest {
         Mockito.when(req.params(":accountId")).thenReturn(invalidAccountID);
 
         //when
-        MessageResponse<List<TransferDTO>> transfersResponse = under_test.retrieveTransfersByAccountId(req, resp);
+        MessageResponse<List<TransferDTO>> transfersResponse = underTest.retrieveTransfersByAccountId(req, resp);
 
         //then
         Assert.assertTrue(transfersResponse.isFailure());
@@ -207,7 +207,7 @@ public class ControllerTest {
         Mockito.when(transferService.retrieveAllTransfersByAccountId(Mockito.anyLong())).thenReturn(Collections.emptyList());
 
         //when
-        MessageResponse<List<TransferDTO>> transfersResponse = under_test.retrieveTransfersByAccountId(req, resp);
+        MessageResponse<List<TransferDTO>> transfersResponse = underTest.retrieveTransfersByAccountId(req, resp);
 
         //then
         Assert.assertFalse(transfersResponse.isFailure());
@@ -227,7 +227,7 @@ public class ControllerTest {
         Mockito.when(transferService.retrieveAllTransfersByAccountId(Mockito.anyLong())).thenReturn(transfers);
 
         //when
-        MessageResponse<List<TransferDTO>> transfersResponse = under_test.retrieveTransfersByAccountId(req, resp);
+        MessageResponse<List<TransferDTO>> transfersResponse = underTest.retrieveTransfersByAccountId(req, resp);
 
         //then
         Assert.assertFalse(transfersResponse.isFailure());
@@ -250,7 +250,7 @@ public class ControllerTest {
         Mockito.when(transferService.transfer(Mockito.any())).thenReturn(expectedTransfer);
 
         //when
-        MessageResponse<TransferDTO> transferResponse = under_test.transfer(req, resp);
+        MessageResponse<TransferDTO> transferResponse = underTest.transfer(req, resp);
         TransferDTO receivedTransfer = transferResponse.getBody();
 
         //then
@@ -273,7 +273,7 @@ public class ControllerTest {
         Mockito.when(req.body()).thenReturn(invalidTransferRequestDTO);
 
         //when
-        MessageResponse<TransferDTO> transferResponse = under_test.transfer(req, resp);
+        MessageResponse<TransferDTO> transferResponse = underTest.transfer(req, resp);
 
         //then
         Assert.assertTrue(transferResponse.isFailure());
@@ -291,7 +291,7 @@ public class ControllerTest {
         Mockito.when(req.body()).thenReturn(jsonHelper.toJson(transferRequestDTO));
 
         //when
-        under_test.transfer(req, resp);
+        underTest.transfer(req, resp);
     }
 
     @Test(expected = InvalidDestinationAccountException.class)
@@ -302,7 +302,7 @@ public class ControllerTest {
         Mockito.when(req.body()).thenReturn(jsonHelper.toJson(transferRequestDTO));
 
         //when
-        under_test.transfer(req, resp);
+        underTest.transfer(req, resp);
     }
 
     @Test(expected = InsufficientFundsException.class)
@@ -314,7 +314,7 @@ public class ControllerTest {
         Mockito.when(transferService.transfer(Mockito.any())).thenThrow(new InsufficientFundsException(""));
 
         //when
-        under_test.transfer(req, resp);
+        underTest.transfer(req, resp);
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -326,7 +326,7 @@ public class ControllerTest {
         Mockito.when(transferService.transfer(Mockito.any())).thenThrow(NoSuchElementException.class);
 
         //when
-        under_test.transfer(req, resp);
+        underTest.transfer(req, resp);
     }
 
     @Test
@@ -338,7 +338,7 @@ public class ControllerTest {
         Mockito.when(transferService.transfer(Mockito.any())).thenReturn(null);
 
         //when
-        MessageResponse<TransferDTO> transferResponse = under_test.transfer(req, resp);
+        MessageResponse<TransferDTO> transferResponse = underTest.transfer(req, resp);
         //then
 
         Assert.assertTrue(transferResponse.isFailure());

@@ -11,8 +11,12 @@ import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -161,6 +165,72 @@ public class TransferServiceImplTest {
 
         //then
         Assert.assertNull(transfer);
+    }
+
+    @Test
+    public void should_return_empty_no_transfers_made() {
+        //given
+        Mockito.when(transferDAOMock.retrieveAllTransfers()).thenReturn(Collections.emptyList());
+
+        //when
+        List<Transfer> allTransfers = underTest.retrieveAllTransfers();
+
+        //then
+        Assert.assertTrue(allTransfers.isEmpty());
+    }
+
+    @Test
+    public void should_return_available_transfers() {
+        //given
+        List<Transfer> availableTransfers = new ArrayList<Transfer>(){{
+            add(new Transfer(1L, NOW, 1L, 2L, BigDecimal.TEN));
+            add(new Transfer(2L, NOW, 1L, 2L, BigDecimal.TEN));
+            add(new Transfer(3L, NOW, 1L, 2L, BigDecimal.TEN));
+            add(new Transfer(4L, NOW, 1L, 2L, BigDecimal.TEN));
+        }};
+
+        Mockito.when(transferDAOMock.retrieveAllTransfers()).thenReturn(availableTransfers);
+
+        //when
+        List<Transfer> allTransfers = underTest.retrieveAllTransfers();
+
+        //then
+        Assert.assertEquals(availableTransfers.size(), allTransfers.size());
+    }
+
+    @Test
+    public void should_return_available_transfers_for_given_account_id() {
+        //given
+        final long sourceAccountId = 1L;
+        List<Transfer> availableTransfers = new ArrayList<Transfer>(){{
+            add(new Transfer(0L, NOW, sourceAccountId, 2L, BigDecimal.TEN));
+            add(new Transfer(2L, NOW, sourceAccountId, 2L, BigDecimal.TEN));
+            add(new Transfer(3L, NOW, 2L, 2L, BigDecimal.TEN));
+            add(new Transfer(4L, NOW, 3L, 2L, BigDecimal.TEN));
+        }};
+
+        Mockito.when(transferDAOMock.retrieveTransfersByAccountId(sourceAccountId))
+                .thenReturn(availableTransfers.stream()
+                        .filter(tfx-> tfx.involvesAccount(sourceAccountId))
+                        .collect(Collectors.toList()));
+
+        //when
+        List<Transfer> allTransfersByAccount = underTest.retrieveAllTransfersByAccountId(sourceAccountId);
+
+        //then
+        Assert.assertEquals(2, allTransfersByAccount.size());
+    }
+
+    @Test
+    public void should_return_empty_list_for_null_account_id() {
+        //given
+        final Long sourceAccountId = null;
+
+        //when
+        List<Transfer> allTransfersByAccount = underTest.retrieveAllTransfersByAccountId(sourceAccountId);
+
+        //then
+        Assert.assertTrue(allTransfersByAccount.isEmpty());
     }
 
     private Runnable acquireLockOnDifferentThread(Account accountToLock) {
