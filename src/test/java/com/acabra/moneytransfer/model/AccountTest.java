@@ -46,7 +46,8 @@ public class AccountTest {
 
     @Test
     public void should_have_zero_balance() {
-        Account account = new Account(1, BigDecimal.valueOf(-1));
-        Assert.assertEquals(BigDecimal.ZERO, account.getBalance());
+        BigDecimal initialBalance = BigDecimal.valueOf(-1);
+        Account account = new Account(1, initialBalance);
+        Assert.assertEquals(initialBalance, account.getBalance());
     }
 }

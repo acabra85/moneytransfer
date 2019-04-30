@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TransferRequestDTO {
@@ -21,7 +22,7 @@ public class TransferRequestDTO {
                               BigDecimal amount) {
         this.sourceAccountId = sourceAccountId;
         this.destinationAccountId = destinationAccountId;
-        this.amount = amount;
+        this.amount = amount.setScale(2, RoundingMode.HALF_EVEN);
     }
 
     @JsonProperty("sourceAccountId")

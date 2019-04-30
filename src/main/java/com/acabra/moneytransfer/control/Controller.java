@@ -4,7 +4,6 @@ import com.acabra.moneytransfer.dto.AccountDTO;
 import com.acabra.moneytransfer.dto.CreateAccountRequestDTO;
 import com.acabra.moneytransfer.dto.TransferDTO;
 import com.acabra.moneytransfer.dto.TransferRequestDTO;
-import com.acabra.moneytransfer.model.Account;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import com.acabra.moneytransfer.response.MessageResponse;

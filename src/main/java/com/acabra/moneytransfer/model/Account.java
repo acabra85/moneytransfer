@@ -1,12 +1,10 @@
 package com.acabra.moneytransfer.model;
 
 import com.acabra.moneytransfer.exception.InsufficientFundsException;
-
 import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
-
 import static java.math.BigDecimal.ZERO;
 
 public class Account {
@@ -17,12 +15,12 @@ public class Account {
 
     public Account(long id, BigDecimal initialBalance) {
         this.id = id;
-        this.balance = invalidDepositAmount(initialBalance) ? ZERO : initialBalance;
+        this.balance = initialBalance;
     }
 
     public Account(long id) {
         this.id = id;
-        this.balance = ZERO;
+        this.balance = BigDecimal.ZERO;
     }
 
     public void withdraw(BigDecimal amount) {

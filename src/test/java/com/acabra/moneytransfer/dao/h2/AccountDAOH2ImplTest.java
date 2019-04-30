@@ -40,7 +40,7 @@ public class AccountDAOH2ImplTest {
     }
 
     @Test
-    public void should_create_account_balance_zero() {
+    public void should_create_account_negative_balance() {
         //given
         BigDecimal initialAmount = BigDecimal.valueOf(-1L);
 
@@ -48,7 +48,7 @@ public class AccountDAOH2ImplTest {
         Account account = underTest.createAccount(initialAmount);
 
         //then
-        Assert.assertEquals(BigDecimal.ZERO, account.getBalance());
+        Assert.assertEquals(initialAmount, account.getBalance());
     }
 
     @Test

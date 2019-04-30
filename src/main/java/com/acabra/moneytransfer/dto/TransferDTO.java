@@ -4,6 +4,7 @@ import com.acabra.moneytransfer.model.Transfer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -25,7 +26,7 @@ public class TransferDTO {
         this.id = id;
         this.sourceAccountId = sourceAccountId;
         this.destinationAccountId = destinationAccountId;
-        this.amount = amount;
+        this.amount = amount.setScale(2, RoundingMode.HALF_EVEN);
     }
 
     public static TransferDTO fromTransfer(Transfer transfer) {

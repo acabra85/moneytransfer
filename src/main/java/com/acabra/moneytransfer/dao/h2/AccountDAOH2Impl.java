@@ -4,6 +4,7 @@ import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import org.sql2o.Connection;
 import org.sql2o.ResultSetHandler;
@@ -67,6 +68,16 @@ public class AccountDAOH2Impl implements AccountDAO {
     }
 
     @Override
+    public Account createAccount(BigDecimal initialBalance) {
+        try (Connection connection = sql2o.open()){
+            Long accountId = connection.createQuery(CREATE_NEW_ACCOUNT)
+                    .addParameter("account_balance", initialBalance)
+                    .executeUpdate().getKey(Long.class);
+            return new Account(accountId, initialBalance);
+        }
+    }
+
+    @Override
     public Account retrieveAccountById(long id) {
         try(Connection connection = sql2o.open()) {
             return connection.createQuery(RETRIEVE_ACCOUNT_BY_ID)
@@ -89,16 +100,6 @@ public class AccountDAOH2Impl implements AccountDAO {
             return connection.createQuery(RETRIEVE_ACCOUNTS_BY_IDS)
                     .addParameter("ids", ids)
                     .executeAndFetch(ACCOUNT_RESULT_SET_HANDLER);
-        }
-    }
-
-    @Override
-    public Account createAccount(BigDecimal initialBalance) {
-        try (Connection connection = sql2o.open()){
-            Long accountId = connection.createQuery(CREATE_NEW_ACCOUNT)
-                    .addParameter("account_balance", BigDecimal.ZERO.compareTo(initialBalance) >= 0 ? BigDecimal.ZERO : initialBalance )
-                    .executeUpdate().getKey(Long.class);
-            return new Account(accountId, initialBalance);
         }
     }
 
