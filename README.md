@@ -15,7 +15,7 @@ Download the source code and execute the following command on the root folder 'm
 An http server will be listening on http://127.0.0.1:4567
 
 ### Test Coverage
-To see the test coverage report head to target/site/jacoco/index.html
+To see the test coverage report head to target/site/jacoco/index.html (or click the codecov link above)
 
 ## API
 * ``` /api/accounts ``` [GET] List all accounts
@@ -40,13 +40,20 @@ To see the test coverage report head to target/site/jacoco/index.html
 
 ### Response
 Every response is a JSON object with the following format:
+* id: identifier of the response
+* statusCode: http status code of the respose,
+* isFailure: a boolean denoting if the call failed
+* message: a description of the response
+* body: The object response for successful requests.
+
+Example
 ```json 
 {
-    id: #identifier of the response,
-    statusCode: http status code of the respose,
-    isFailure: a boolean denoting if the call failed
-    message: a description of the response
-    body: The object response for successful requests.
+    "id": 1,
+    "statusCode": 200,
+    "isFailure": false
+    "message": "Success retrieving accounts"
+    "body": [].
 }
 ```
 
