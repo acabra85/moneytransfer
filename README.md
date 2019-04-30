@@ -51,9 +51,9 @@ Example
 {
     "id": 1,
     "statusCode": 200,
-    "isFailure": false
-    "message": "Success retrieving accounts"
-    "body": [].
+    "isFailure": false,
+    "message": "Success retrieving accounts",
+    "body": []
 }
 ```
 
