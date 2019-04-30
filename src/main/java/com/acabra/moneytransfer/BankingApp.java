@@ -18,21 +18,21 @@ public class BankingApp {
     private final Router router;
 
     public static void main(String... args) {
-        BankingApp bankingApp = new BankingApp();
+        BankingApp bankingApp = new BankingApp(H2Sql2oHelper.ofLocalKeepOpenSql2o());
         bankingApp.start();
     }
 
-    public BankingApp () {
-        Sql2o sql2o = H2Sql2oHelper.ofLocalKeepOpenSql2o(); //BD Connection
+    public BankingApp(Sql2o sql2o) {
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
+        AccountService accountService = new AccountServiceImpl(accountDAO);
         TransferDAO transferDAO = new TransferDAOH2Impl(sql2o);
         TransferService transferService = new TransferServiceImpl(transferDAO, accountDAO);
-        AccountService accountService = new AccountServiceImpl(accountDAO);
         Controller controller = new Controller(accountService, transferService);
         this.router = new Router(controller);
     }
 
-    private void start() {
+    void start() {
         this.router.registerRoutes();
     }
+
 }

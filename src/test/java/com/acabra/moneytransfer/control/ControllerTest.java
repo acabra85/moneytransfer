@@ -258,7 +258,7 @@ public class ControllerTest {
         Assert.assertEquals(HttpStatus.CREATED_201, transferResponse.getStatusCode());
         Assert.assertEquals(sourceAccountId, receivedTransfer.getSourceAccountId());
         Assert.assertEquals(destinationAccountId, receivedTransfer.getDestinationAccountId());
-        Assert.assertEquals(transferAmount, receivedTransfer.getAmount());
+        Assert.assertEquals(0, transferAmount.compareTo(receivedTransfer.getAmount()));
         Assert.assertNotNull(receivedTransfer.getTimestamp());
 
         Mockito.verify(req, Mockito.times(1)).body();

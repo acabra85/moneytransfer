@@ -35,9 +35,6 @@ public class TransferServiceImplTest {
     @Mock
     TransferDAO transferDAOMock;
 
-    @Mock
-    AccountsTransferLock accountsTransferLockMock;
-
     @InjectMocks
     private TransferServiceImpl underTest;
 
@@ -52,11 +49,11 @@ public class TransferServiceImplTest {
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
         Transfer internalTransfer = new Transfer(1L, NOW, sourceAccount.getId(), destinationAccount.getId(), transferAmount);
+        AccountsTransferLock accountTransferLock = Mockito.mock(AccountsTransferLock.class);
 
-        Mockito.when(accountDAOMock.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId()))
-                .thenReturn(accountsTransferLockMock);
-        Mockito.when(accountsTransferLockMock.getSourceAccount()).thenReturn(sourceAccount);
-        Mockito.when(accountsTransferLockMock.getDestinationAccount()).thenReturn(destinationAccount);
+        Mockito.when(accountTransferLock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(accountTransferLock.getDestinationAccount()).thenReturn(destinationAccount);
+        Mockito.when(accountDAOMock.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId())).thenReturn(accountTransferLock);
         Mockito.when(transferDAOMock.storeTransferAndCommitTransactional(any(), any())).thenReturn(internalTransfer);
 
         //when
@@ -69,9 +66,11 @@ public class TransferServiceImplTest {
 
         //verify
         Mockito.verify(accountDAOMock, Mockito.times(1)).lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId());
-        Mockito.verify(accountsTransferLockMock, Mockito.times(1)).getDestinationAccount();
-        Mockito.verify(accountsTransferLockMock, Mockito.times(1)).getSourceAccount();
         Mockito.verify(transferDAOMock, Mockito.times(1)).storeTransferAndCommitTransactional(any(), any());
+        Mockito.verify(accountTransferLock, Mockito.times(1)).getDestinationAccount();
+        Mockito.verify(accountTransferLock, Mockito.times(1)).getSourceAccount();
+
+
     }
 
     @Test(expected = InsufficientFundsException.class)
@@ -81,9 +80,10 @@ public class TransferServiceImplTest {
         Account destinationAccount = new Account(2L, new BigDecimal("50"));
         BigDecimal transferAmount = BigDecimal.valueOf(20L);
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
+        AccountsTransferLock accountTransferLockMock = Mockito.mock(AccountsTransferLock.class);
 
-        Mockito.when(accountDAOMock.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId())).thenReturn(accountsTransferLockMock);
-        Mockito.when(accountsTransferLockMock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(accountTransferLockMock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(accountDAOMock.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId())).thenReturn(accountTransferLockMock);
 
         //when
         underTest.transfer(transferRequest);
@@ -130,11 +130,11 @@ public class TransferServiceImplTest {
         //given
         Account sourceAccount = new Account(1L, BigDecimal.TEN);
         Account destinationAccount = new Account(2L, BigDecimal.TEN);
-        AccountsTransferLock lock = Mockito.mock(AccountsTransferLock.class);
+        AccountsTransferLock accountTransferLock = Mockito.mock(AccountsTransferLock.class);
 
-        Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenReturn(lock);
-        Mockito.when(lock.getSourceAccount()).thenReturn(sourceAccount);
-        Mockito.when(lock.getDestinationAccount()).thenReturn(destinationAccount);
+        Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenReturn(accountTransferLock);
+        Mockito.when(accountTransferLock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(accountTransferLock.getDestinationAccount()).thenReturn(destinationAccount);
 
         //lock the source account on a different thread
         Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(sourceAccount));
@@ -144,6 +144,8 @@ public class TransferServiceImplTest {
 
         //then
         Assert.assertNull(transfer);
+        Mockito.verify(accountTransferLock, Mockito.times(1)).getDestinationAccount();
+        Mockito.verify(accountTransferLock, Mockito.times(1)).getSourceAccount();
     }
 
     @Test
@@ -165,6 +167,8 @@ public class TransferServiceImplTest {
 
         //then
         Assert.assertNull(transfer);
+        Mockito.verify(lock, Mockito.times(1)).getDestinationAccount();
+        Mockito.verify(lock, Mockito.times(1)).getSourceAccount();
     }
 
     @Test
@@ -245,6 +249,5 @@ public class TransferServiceImplTest {
             }
         };
     }
-
 
 }

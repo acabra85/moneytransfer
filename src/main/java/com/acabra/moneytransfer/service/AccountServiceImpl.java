@@ -2,6 +2,7 @@ package com.acabra.moneytransfer.service;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dto.AccountDTO;
+import com.acabra.moneytransfer.model.Account;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +23,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDTO retrieveAccountById(Long accountId) {
         if (null == accountId) return null;
-        return AccountDTO.fromAccount(accountDao.retrieveAccountById(accountId));
+        Account account = accountDao.retrieveAccountById(accountId);
+        if (null == account) return null;
+        return AccountDTO.fromAccount(account);
     }
 
     @Override
