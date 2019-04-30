@@ -34,18 +34,4 @@ public class AccountDTO {
     public BigDecimal getBalance() {
         return balance;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AccountDTO that = (AccountDTO) o;
-        return id == that.id &&
-                Objects.equals(balance, that.balance);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, balance);
-    }
 }

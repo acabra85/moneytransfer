@@ -57,7 +57,10 @@ public class AccountServiceImplTest {
         Mockito.when(accountDAOMock.retrieveAccountById(accountId)).thenReturn(account);
 
         //then when
-        Assert.assertEquals(AccountDTO.fromAccount(account), underTest.retrieveAccountById(accountId));
+        AccountDTO accountDTO = underTest.retrieveAccountById(accountId);
+
+        Assert.assertEquals(accountId, accountDTO.getId());
+        Assert.assertEquals(0, BigDecimal.ZERO.compareTo(accountDTO.getBalance()));
     }
 
     @Test
@@ -72,14 +75,15 @@ public class AccountServiceImplTest {
     @Test
     public void should_create_account_zero_balance_for_null_balance() {
         //given
-        Account expectedAccount = new Account(1L, BigDecimal.ZERO);
+        long expectedAccountId = 1L;
+        Account expectedAccount = new Account(expectedAccountId, BigDecimal.ZERO);
         Mockito.when(accountDAOMock.createAccount(Mockito.any())).thenReturn(expectedAccount);
 
         //when
-        AccountDTO actualAccount = underTest.createAccount(null);
+        AccountDTO accountDTO = underTest.createAccount(null);
 
-        //then
-        Assert.assertEquals(AccountDTO.fromAccount(expectedAccount), actualAccount);
+        Assert.assertEquals(expectedAccountId, accountDTO.getId());
+        Assert.assertEquals(0, BigDecimal.ZERO.compareTo(accountDTO.getBalance()));
     }
 
     @Test

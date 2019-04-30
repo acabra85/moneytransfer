@@ -57,7 +57,7 @@ public class Router {
 
         exception(Exception.class, (ex, req, res) -> {
             processResponseException(ex, res);
-            res.type(MimeTypes.Type.APPLICATION_JSON.toString());
+            res.type(MimeTypes.Type.APPLICATION_JSON_UTF_8.toString());
             logger.error(ex.getMessage(), ex);
         });
 

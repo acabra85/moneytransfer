@@ -57,21 +57,4 @@ public class TransferDTO {
     public BigDecimal getAmount() {
         return amount;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TransferDTO that = (TransferDTO) o;
-        return id == that.id &&
-                sourceAccountId == that.sourceAccountId &&
-                destinationAccountId == that.destinationAccountId &&
-                Objects.equals(timestamp, that.timestamp) &&
-                Objects.equals(amount, that.amount);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, timestamp, sourceAccountId, destinationAccountId, amount);
-    }
 }
