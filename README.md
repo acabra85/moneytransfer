@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/acabra85/moneytransfer.svg?branch=master)](https://travis-ci.org/acabra85/moneytransfer)
+[![codecov](https://codecov.io/gh/acabra85/moneytransfer/branch/master/graph/badge.svg)](https://codecov.io/gh/acabra85/moneytransfer)
+
 # moneytransfer
 Powerful backend http server with intuitive rest api, in memory DB for transfer money between accounts
 
