@@ -28,7 +28,7 @@ public class H2Sql2oHelper {
         return sql2o;
     }
 
-    private static void initializeDB(Sql2o sql2o) {
+    public static void initializeDB(Sql2o sql2o) {
         try(Connection tx = sql2o.beginTransaction()) {
             tx.createQuery(AccountDAOH2Impl.CLEAN_DB).executeUpdate();
             tx.createQuery(AccountDAOH2Impl.CREATE_TABLE_ACCOUNT).executeUpdate();
@@ -40,12 +40,12 @@ public class H2Sql2oHelper {
     private static class LocalDateTimeConverter implements Converter<LocalDateTime> {
         @Override
         public LocalDateTime convert(Object val) throws ConverterException {
-            return (val instanceof Timestamp) ? ((Timestamp) val).toLocalDateTime() : null;
+            return ((Timestamp) val).toLocalDateTime();
         }
 
         @Override
         public Object toDatabaseParam(LocalDateTime val) {
-            return val == null ? null : Timestamp.valueOf(val);
+            return Timestamp.valueOf(val);
         }
     }
 }
