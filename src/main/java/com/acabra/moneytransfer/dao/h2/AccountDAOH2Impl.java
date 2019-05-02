@@ -4,7 +4,6 @@ import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import org.sql2o.Connection;
 import org.sql2o.ResultSetHandler;

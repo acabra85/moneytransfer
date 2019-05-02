@@ -9,6 +9,7 @@ import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import com.acabra.moneytransfer.model.Account;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
+import com.acabra.moneytransfer.utils.TestUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -61,8 +62,8 @@ public class TransferServiceImplTest {
 
         //then
         Assert.assertEquals(transfer.id, internalTransfer.id);
-        Assert.assertEquals(0, sourceAccount.getBalance().compareTo(new BigDecimal("100")));
-        Assert.assertEquals(0, destinationAccount.getBalance().compareTo(new BigDecimal("150")));
+        TestUtils.assertBigDecimalEquals("100", sourceAccount.getBalance());
+        TestUtils.assertBigDecimalEquals("150", destinationAccount.getBalance());
 
         //verify
         Mockito.verify(accountDAOMock, Mockito.times(1)).lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId());

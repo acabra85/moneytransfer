@@ -3,6 +3,7 @@ package com.acabra.moneytransfer.dao.h2;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.utils.TestUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,7 +62,7 @@ public class AccountDAOH2ImplTest {
         Account queryAccount = underTest.retrieveAccountById(accountId);
 
         //then
-        Assert.assertEquals(0, initialAmount.compareTo(queryAccount.getBalance()));
+        TestUtils.assertBigDecimalEquals(initialAmount, queryAccount.getBalance());
         Assert.assertEquals(accountId, queryAccount.getId());
     }
 
@@ -82,7 +83,7 @@ public class AccountDAOH2ImplTest {
         Assert.assertEquals(expectedAccountSize, accounts.size());
         Set<Long> seenAccountIds = new HashSet<>();
         for (Account account : accounts) {
-            Assert.assertEquals(0, initialAmount.compareTo(account.getBalance()));
+            TestUtils.assertBigDecimalEquals(initialAmount, account.getBalance());
             Assert.assertFalse(seenAccountIds.contains(account.getId()));
             seenAccountIds.add(account.getId());
         }
@@ -99,18 +100,23 @@ public class AccountDAOH2ImplTest {
         List<Account> accounts = underTest.retrieveAccountsByIds(ids);
         Assert.assertEquals(expectedAccountSize, accounts.size());
         for (Account account : accounts) {
-            Assert.assertEquals(0, initialAmount.compareTo(account.getBalance()));
+            TestUtils.assertBigDecimalEquals(initialAmount, account.getBalance());
         }
     }
 
     @Test
     public void should_update_account_balance() {
+        //given
         BigDecimal initialAmount = BigDecimal.TEN;
         Account account = underTest.createAccount(initialAmount);
         account.withdraw(BigDecimal.ONE);
-        BigDecimal expectedAccountSize = initialAmount.subtract(BigDecimal.ONE);
+        BigDecimal expectedAccountBalance = initialAmount.subtract(BigDecimal.ONE);
+
+        //when
         underTest.updateAccountBalance(account);
-        Assert.assertEquals(0, underTest.retrieveAccountById(account.getId()).getBalance().compareTo(expectedAccountSize));
+
+        //then
+        TestUtils.assertBigDecimalEquals(expectedAccountBalance, underTest.retrieveAccountById(account.getId()).getBalance());
     }
 
     @Test
@@ -119,7 +125,7 @@ public class AccountDAOH2ImplTest {
         BigDecimal initialAmount = BigDecimal.TEN;
         Account account = underTest.createAccount(initialAmount);
         account.withdraw(BigDecimal.ONE);
-        BigDecimal expectedAccountSize = initialAmount.subtract(BigDecimal.ONE);
+        BigDecimal expectedBalanceAfterTransfer = initialAmount.subtract(BigDecimal.ONE);
         Connection tx = sql2o.beginTransaction();
 
         //when
@@ -127,7 +133,7 @@ public class AccountDAOH2ImplTest {
         tx.commit();
 
         //then
-        Assert.assertEquals(0, underTest.retrieveAccountById(account.getId()).getBalance().compareTo(expectedAccountSize));
+        TestUtils.assertBigDecimalEquals(expectedBalanceAfterTransfer, underTest.retrieveAccountById(account.getId()).getBalance());
     }
 
     @Test
@@ -172,7 +178,8 @@ public class AccountDAOH2ImplTest {
         destinationAccount.deposit(BigDecimal.ONE);
 
         //then
-        Assert.assertEquals(0, sourceAccount.getBalance().compareTo(new BigDecimal("9")));
-        Assert.assertEquals(0, destinationAccount.getBalance().compareTo(new BigDecimal("11")));
+        TestUtils.assertBigDecimalEquals("9", sourceAccount.getBalance());
+        TestUtils.assertBigDecimalEquals("11", destinationAccount.getBalance());
+
     }
 }

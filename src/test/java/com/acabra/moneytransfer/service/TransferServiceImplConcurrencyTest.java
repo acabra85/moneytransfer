@@ -5,12 +5,12 @@ import com.acabra.moneytransfer.dao.h2.H2Sql2oHelper;
 import com.acabra.moneytransfer.dao.h2.TransferDAOH2Impl;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
+import com.acabra.moneytransfer.utils.TestUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.sql2o.Sql2o;
@@ -37,15 +37,15 @@ public class TransferServiceImplConcurrencyTest {
 
         Collection<Callable<Transfer>> concurrentJobs = new ArrayList<>();
         for (int i = 0; i < 201; i++) {
-            concurrentJobs.add(()-> underTest.transfer(new TransferRequest(account1Id, account2Id, new BigDecimal("0.01"))));
-            concurrentJobs.add(()-> underTest.transfer(new TransferRequest(account3Id, account1Id, new BigDecimal("0.03"))));
-            concurrentJobs.add(()-> underTest.transfer(new TransferRequest(account2Id, account3Id, new BigDecimal("0.02"))));
+            concurrentJobs.add(() -> underTest.transfer(new TransferRequest(account1Id, account2Id, new BigDecimal("0.01"))));
+            concurrentJobs.add(() -> underTest.transfer(new TransferRequest(account3Id, account1Id, new BigDecimal("0.03"))));
+            concurrentJobs.add(() -> underTest.transfer(new TransferRequest(account2Id, account3Id, new BigDecimal("0.02"))));
         }
 
         Executors.newFixedThreadPool(4).invokeAll(concurrentJobs);
 
-        Assert.assertEquals(0, accountDAO.retrieveAccountById(account1Id).getBalance().compareTo(new BigDecimal("10004.02")));
-        Assert.assertEquals(0, accountDAO.retrieveAccountById(account2Id).getBalance().compareTo(new BigDecimal("49997.99")));
-        Assert.assertEquals(0, accountDAO.retrieveAccountById(account3Id).getBalance().compareTo(new BigDecimal("69997.99")));
+        TestUtils.assertBigDecimalEquals("10004.02", accountDAO.retrieveAccountById(account1Id).getBalance());
+        TestUtils.assertBigDecimalEquals("49997.99", accountDAO.retrieveAccountById(account2Id).getBalance());
+        TestUtils.assertBigDecimalEquals("69997.99", accountDAO.retrieveAccountById(account3Id).getBalance());
     }
 }

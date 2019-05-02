@@ -3,6 +3,7 @@ package com.acabra.moneytransfer.service;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dto.AccountDTO;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.utils.TestUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import org.junit.Assert;
@@ -60,7 +61,7 @@ public class AccountServiceImplTest {
         AccountDTO accountDTO = underTest.retrieveAccountById(accountId);
 
         Assert.assertEquals(accountId, accountDTO.getId());
-        Assert.assertEquals(0, BigDecimal.ZERO.compareTo(accountDTO.getBalance()));
+        TestUtils.assertBigDecimalEquals("0", accountDTO.getBalance());
     }
 
     @Test
@@ -83,7 +84,8 @@ public class AccountServiceImplTest {
         AccountDTO accountDTO = underTest.createAccount(null);
 
         Assert.assertEquals(expectedAccountId, accountDTO.getId());
-        Assert.assertEquals(0, BigDecimal.ZERO.compareTo(accountDTO.getBalance()));
+        TestUtils.assertBigDecimalEquals("0", accountDTO.getBalance());
+
     }
 
     @Test

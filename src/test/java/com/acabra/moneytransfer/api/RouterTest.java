@@ -13,6 +13,7 @@ import com.acabra.moneytransfer.response.MessageResponse;
 import com.acabra.moneytransfer.service.AccountServiceImpl;
 import com.acabra.moneytransfer.service.TransferServiceImpl;
 import com.acabra.moneytransfer.utils.JsonHelper;
+import com.acabra.moneytransfer.utils.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -120,11 +121,11 @@ public class RouterTest {
         Assert.assertFalse(accountsResponse.isFailure());
         Assert.assertEquals(HttpStatus.OK_200, accountsResponse.getStatusCode());
         Assert.assertEquals(accountsCreated, accountsResponse.getBody().size());
-        Assert.assertEquals(0, new BigDecimal("660").compareTo(accountsResponse.getBody()
+        TestUtils.assertBigDecimalEquals("660", accountsResponse.getBody()
                 .stream()
                 .map(AccountDTO::getBalance)
                 .reduce(BigDecimal::add)
-                .orElse(BigDecimal.ZERO)));
+                .orElse(BigDecimal.ZERO));
     }
 
     @Test
@@ -267,22 +268,10 @@ public class RouterTest {
         //when
         MessageResponse<List<TransferDTO>> response = get(GET_ALL_TRANSFERS_URI).as(new TypeRef<MessageResponse<List<TransferDTO>>>() {});
 
-//        MessageResponse<List<AccountDTO>> accounts = get(GET_ALL_ACCOUNTS).as(ALL_ACCOUNTS_RESPONSE_TYPE_REF);
-//
-//        Map<AccountDTO, Set<TransferDTO>> accountsToTransfersMap = accounts.getBody().stream()
-//                .collect(Collectors.toMap(Function.identity(), (acc) -> {
-//                                    final long accountId = acc.getId();
-//                                    return response.getBody().stream()
-//                                    .filter(tfx-> tfx.getDestinationAccountId() == accountId || tfx.getSourceAccountId() == accountId)
-//                                    .collect(Collectors.toSet());
-//                }));
-
         //then
         Assert.assertFalse(response.isFailure());
         Assert.assertEquals(HttpStatus.OK_200, response.getStatusCode());
         Assert.assertEquals(transfers.size(), response.getBody().size());
-
-        //Assert.assertEquals(0, accountsToTransfersMap.get(accounts.getBody().get(0)));
 
         validateAccount(accountAId, "1149.65");
         validateAccount(accountBId, "597.13");

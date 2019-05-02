@@ -13,6 +13,7 @@ import com.acabra.moneytransfer.response.MessageResponse;
 import com.acabra.moneytransfer.service.AccountService;
 import com.acabra.moneytransfer.service.TransferService;
 import com.acabra.moneytransfer.utils.JsonHelper;
+import com.acabra.moneytransfer.utils.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -258,7 +259,7 @@ public class ControllerTest {
         Assert.assertEquals(HttpStatus.CREATED_201, transferResponse.getStatusCode());
         Assert.assertEquals(sourceAccountId, receivedTransfer.getSourceAccountId());
         Assert.assertEquals(destinationAccountId, receivedTransfer.getDestinationAccountId());
-        Assert.assertEquals(0, transferAmount.compareTo(receivedTransfer.getAmount()));
+        TestUtils.assertBigDecimalEquals(transferAmount, receivedTransfer.getAmount());
         Assert.assertNotNull(receivedTransfer.getTimestamp());
 
         Mockito.verify(req, Mockito.times(1)).body();
