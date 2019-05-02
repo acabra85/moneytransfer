@@ -5,6 +5,7 @@ import com.acabra.moneytransfer.model.Account;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.Assert;
@@ -19,7 +20,7 @@ public class TransferDAOH2ImplTest {
 
     private TransferDAOH2Impl underTest;
 
-    private LocalDateTime NOW = LocalDateTime.now();
+    private LocalDateTime NOW = LocalDateTime.now(Clock.systemUTC());
 
     @Before
     public void before() {

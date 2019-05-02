@@ -4,6 +4,7 @@ import com.acabra.moneytransfer.dto.TransferRequestDTO;
 import com.acabra.moneytransfer.exception.InvalidDestinationAccountException;
 import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 public class TransferRequest {
@@ -17,7 +18,7 @@ public class TransferRequest {
         this.sourceAccountId = sourceAccountId;
         this.destinationAccountId = destinationAccountId;
         this.transferAmount = transferAmount;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now(Clock.systemUTC());
     }
 
     public long getSourceAccountId() {

@@ -11,6 +11,7 @@ import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import com.acabra.moneytransfer.utils.TestUtils;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +40,7 @@ public class TransferServiceImplTest {
     @InjectMocks
     private TransferServiceImpl underTest;
 
-    private LocalDateTime NOW = LocalDateTime.now();
+    private LocalDateTime NOW = LocalDateTime.now(Clock.systemUTC());
 
     @Test
     public void should_transfer_amount_between_accounts() {

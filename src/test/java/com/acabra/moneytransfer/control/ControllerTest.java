@@ -16,6 +16,7 @@ import com.acabra.moneytransfer.utils.JsonHelper;
 import com.acabra.moneytransfer.utils.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +50,7 @@ public class ControllerTest {
     Response resp = Mockito.mock(Response.class);
     JsonHelper jsonHelper = JsonHelper.getInstance();
 
-    LocalDateTime NOW = LocalDateTime.now(); //reduce the calls to the now method
+    LocalDateTime NOW = LocalDateTime.now(Clock.systemUTC()); //reduce the calls to the now method
 
     @Test
     public void should_create_account() throws JsonProcessingException {
