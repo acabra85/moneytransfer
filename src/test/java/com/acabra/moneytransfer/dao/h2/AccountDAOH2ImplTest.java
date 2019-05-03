@@ -3,6 +3,7 @@ package com.acabra.moneytransfer.dao.h2;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.utils.TestUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class AccountDAOH2ImplTest {
         BigDecimal initialAmount = BigDecimal.TEN;
 
         //when
-        Account account = underTest.createAccount(initialAmount);
+        Account account = underTest.createAccount(initialAmount, Currency.EUR);
 
         //then
         Assert.assertEquals(initialAmount, account.getBalance());
@@ -46,7 +47,7 @@ public class AccountDAOH2ImplTest {
         BigDecimal initialAmount = BigDecimal.valueOf(-1L);
 
         //when
-        Account account = underTest.createAccount(initialAmount);
+        Account account = underTest.createAccount(initialAmount, Currency.EUR);
 
         //then
         Assert.assertEquals(initialAmount, account.getBalance());
@@ -56,7 +57,7 @@ public class AccountDAOH2ImplTest {
     public void should_retrieve_account_by_id() {
         //given
         BigDecimal initialAmount = BigDecimal.TEN;
-        long accountId = underTest.createAccount(initialAmount).getId();
+        long accountId = underTest.createAccount(initialAmount, Currency.EUR).getId();
 
         //when
         Account queryAccount = underTest.retrieveAccountById(accountId);
@@ -73,7 +74,7 @@ public class AccountDAOH2ImplTest {
         int expectedAccountSize = 3;
 
         for (int i = 0; i < expectedAccountSize; i++) {
-            underTest.createAccount(initialAmount);
+            underTest.createAccount(initialAmount, Currency.EUR);
         }
 
         //when
@@ -95,7 +96,7 @@ public class AccountDAOH2ImplTest {
         int expectedAccountSize = 3;
         List<Long> ids = new ArrayList<>(expectedAccountSize);
         for (int i = 0; i < expectedAccountSize; i++) {
-            ids.add(underTest.createAccount(initialAmount).getId());
+            ids.add(underTest.createAccount(initialAmount, Currency.EUR).getId());
         }
         List<Account> accounts = underTest.retrieveAccountsByIds(ids);
         Assert.assertEquals(expectedAccountSize, accounts.size());
@@ -108,7 +109,7 @@ public class AccountDAOH2ImplTest {
     public void should_update_account_balance() {
         //given
         BigDecimal initialAmount = BigDecimal.TEN;
-        Account account = underTest.createAccount(initialAmount);
+        Account account = underTest.createAccount(initialAmount, Currency.EUR);
         account.withdraw(BigDecimal.ONE);
         BigDecimal expectedAccountBalance = initialAmount.subtract(BigDecimal.ONE);
 
@@ -123,7 +124,7 @@ public class AccountDAOH2ImplTest {
     public void should_update_account_balance_transactional() {
         //given
         BigDecimal initialAmount = BigDecimal.TEN;
-        Account account = underTest.createAccount(initialAmount);
+        Account account = underTest.createAccount(initialAmount, Currency.EUR);
         account.withdraw(BigDecimal.ONE);
         BigDecimal expectedBalanceAfterTransfer = initialAmount.subtract(BigDecimal.ONE);
         Connection tx = sql2o.beginTransaction();
@@ -139,8 +140,8 @@ public class AccountDAOH2ImplTest {
     @Test
     public void should_retrieve_account_lock_for_transfer() {
         //given
-        Account sourceAccount = underTest.createAccount(BigDecimal.TEN);
-        Account destinationAccount = underTest.createAccount(BigDecimal.TEN);
+        Account sourceAccount = underTest.createAccount(BigDecimal.TEN, Currency.EUR);
+        Account destinationAccount = underTest.createAccount(BigDecimal.TEN, Currency.EUR);
 
         //when
         AccountsTransferLock accountsTransferLock = underTest.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId());
@@ -153,7 +154,7 @@ public class AccountDAOH2ImplTest {
     @Test(expected = NoSuchElementException.class)
     public void should_fail_account_non_existent_account() {
         //given
-        Account sourceAccount = underTest.createAccount(BigDecimal.TEN);
+        Account sourceAccount = underTest.createAccount(BigDecimal.TEN, Currency.EUR);
         long nonExistentAccountId = 10L;
 
         //when
@@ -165,8 +166,8 @@ public class AccountDAOH2ImplTest {
     @Test
     public void should_transfer_from_account_list() {
         //given
-        long sourceAccountId = underTest.createAccount(BigDecimal.TEN).getId();
-        long destinationAccountId = underTest.createAccount(BigDecimal.TEN).getId();
+        long sourceAccountId = underTest.createAccount(BigDecimal.TEN, Currency.EUR).getId();
+        long destinationAccountId = underTest.createAccount(BigDecimal.TEN, Currency.EUR).getId();
 
         List<Account> accounts = underTest.retrieveAllAccounts();
 

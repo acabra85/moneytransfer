@@ -2,6 +2,7 @@ package com.acabra.moneytransfer.dao.h2;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import java.math.BigDecimal;
@@ -45,8 +46,8 @@ public class TransferDAOH2ImplTest {
         //given
         BigDecimal transferAmount = BigDecimal.TEN;
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
-        Account sourceAccount = accountDAO.createAccount(BigDecimal.TEN);
-        Account destinationAccount = accountDAO.createAccount(BigDecimal.ZERO);
+        Account sourceAccount = accountDAO.createAccount(BigDecimal.TEN, Currency.EUR);
+        Account destinationAccount = accountDAO.createAccount(BigDecimal.ZERO, Currency.EUR);
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
         Connection tx = sql2o.beginTransaction();
@@ -65,9 +66,9 @@ public class TransferDAOH2ImplTest {
     public void should_retrieve_transfers_by_id() {
         //given
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
-        Account accountA = accountDAO.createAccount(new BigDecimal("50"));
-        Account accountB = accountDAO.createAccount(BigDecimal.ZERO);
-        Account accountC = accountDAO.createAccount(BigDecimal.ZERO);
+        Account accountA = accountDAO.createAccount(new BigDecimal("50"), Currency.EUR);
+        Account accountB = accountDAO.createAccount(BigDecimal.ZERO, Currency.EUR);
+        Account accountC = accountDAO.createAccount(BigDecimal.ZERO, Currency.EUR);
         TransferRequest transferFromAtoB = new TransferRequest(accountA.getId(), accountB.getId(), BigDecimal.TEN);
         TransferRequest transferFromBtoC = new TransferRequest(accountB.getId(), accountC.getId(), new BigDecimal("7.5"));
         TransferRequest transferFromCtoA = new TransferRequest(accountC.getId(), accountA.getId(), new BigDecimal("5"));
@@ -104,9 +105,9 @@ public class TransferDAOH2ImplTest {
     public void should_retrieve_all_transfers() {
         //given
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
-        Account accountA = accountDAO.createAccount(new BigDecimal("50"));
-        Account accountB = accountDAO.createAccount(BigDecimal.ZERO);
-        Account accountC = accountDAO.createAccount(BigDecimal.ZERO);
+        Account accountA = accountDAO.createAccount(new BigDecimal("50"), Currency.EUR);
+        Account accountB = accountDAO.createAccount(BigDecimal.ZERO, Currency.EUR);
+        Account accountC = accountDAO.createAccount(BigDecimal.ZERO, Currency.EUR);
         TransferRequest transferFromAtoB = new TransferRequest(accountA.getId(), accountB.getId(), BigDecimal.TEN);
         TransferRequest transferFromBtoC = new TransferRequest(accountB.getId(), accountC.getId(), new BigDecimal("7.5"));
         TransferRequest transferFromCtoA = new TransferRequest(accountC.getId(), accountA.getId(), new BigDecimal("5"));

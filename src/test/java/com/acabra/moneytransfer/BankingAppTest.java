@@ -34,12 +34,12 @@ public class BankingAppTest {
             .then().assertThat().statusCode(HttpStatus.OK_200);
 
         given()
-            .body("{\"initialBalance\": 1000}")
+            .body("{\"initialBalance\": 1000, \"currencyCode\": \"EUR\"}")
             .when().post("/accounts/new")
             .then().assertThat().statusCode(HttpStatus.CREATED_201);
 
         given()
-            .body("{\"initialBalance\": 2000}")
+            .body("{\"initialBalance\": 2000, \"currencyCode\": \"EUR\"}")
             .when().post("/accounts/new")
             .then().assertThat().statusCode(HttpStatus.CREATED_201);
 

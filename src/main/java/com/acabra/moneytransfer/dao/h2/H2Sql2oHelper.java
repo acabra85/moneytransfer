@@ -1,5 +1,7 @@
 package com.acabra.moneytransfer.dao.h2;
 
+import com.acabra.moneytransfer.dao.CurrencyDAO;
+import com.acabra.moneytransfer.model.Currency;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -13,7 +15,7 @@ import org.sql2o.quirks.Quirks;
 public class H2Sql2oHelper {
 
     //DB CONFIG
-    private static final Quirks NO_QUIRKS = new NoQuirks(new HashMap<Class, Converter>(){{
+    private static final Quirks NO_QUIRKS = new NoQuirks(new HashMap<Class, Converter>() {{
         put(LocalDateTime.class, new LocalDateTimeConverter());
     }});
 
@@ -25,12 +27,28 @@ public class H2Sql2oHelper {
     public static Sql2o ofLocalKeepOpenSql2o() {
         Sql2o sql2o = new Sql2o(KEEP_DB_OPEN_URL, "", "", NO_QUIRKS);
         initializeDB(sql2o);
+        populateConfig(sql2o);
         return sql2o;
     }
 
-    public static void initializeDB(Sql2o sql2o) {
-        try(Connection tx = sql2o.beginTransaction()) {
+    private static void populateConfig(Sql2o sql2o) {
+        initializeCurrencies(sql2o);
+    }
+
+    private static void initializeCurrencies(Sql2o sql2o) {
+        CurrencyDAO currencyDAO = new CurrencyH2DAOImpl(sql2o);
+        try (Connection tx = sql2o.beginTransaction()) {
+            for (Currency currency : Currency.values()) {
+                currencyDAO.createCurrencyTransactional(currency, tx);
+            }
+            tx.commit();
+        }
+    }
+
+    private static void initializeDB(Sql2o sql2o) {
+        try (Connection tx = sql2o.beginTransaction()) {
             tx.createQuery(AccountDAOH2Impl.CLEAN_DB).executeUpdate();
+            tx.createQuery(CurrencyH2DAOImpl.CREATE_TABLE_CURRENCY).executeUpdate();
             tx.createQuery(AccountDAOH2Impl.CREATE_TABLE_ACCOUNT).executeUpdate();
             tx.createQuery(TransferDAOH2Impl.CREATE_TABLE_TRANSFER).executeUpdate();
             tx.commit();

@@ -3,6 +3,7 @@ package com.acabra.moneytransfer.service;
 import com.acabra.moneytransfer.dao.h2.AccountDAOH2Impl;
 import com.acabra.moneytransfer.dao.h2.H2Sql2oHelper;
 import com.acabra.moneytransfer.dao.h2.TransferDAOH2Impl;
+import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import com.acabra.moneytransfer.utils.TestUtils;
@@ -31,9 +32,9 @@ public class TransferServiceImplConcurrencyTest {
     @Test
     public void should_preserve_data_integrity_in_face_of_concurrency() throws InterruptedException {
 
-        long account1Id = accountDAO.createAccount(new BigDecimal("10000")).getId();
-        long account2Id = accountDAO.createAccount(new BigDecimal("50000")).getId();
-        long account3Id = accountDAO.createAccount(new BigDecimal("70000")).getId();
+        long account1Id = accountDAO.createAccount(new BigDecimal("10000"), Currency.EUR).getId();
+        long account2Id = accountDAO.createAccount(new BigDecimal("50000"), Currency.EUR).getId();
+        long account3Id = accountDAO.createAccount(new BigDecimal("70000"), Currency.EUR).getId();
 
         Collection<Callable<Transfer>> concurrentJobs = new ArrayList<>();
         for (int i = 0; i < 201; i++) {

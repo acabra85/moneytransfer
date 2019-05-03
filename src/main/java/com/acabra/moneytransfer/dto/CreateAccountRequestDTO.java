@@ -9,10 +9,15 @@ import java.math.BigDecimal;
 public class CreateAccountRequestDTO {
 
     private final BigDecimal initialBalance;
+    private final String currencyCode;
 
     @JsonCreator
-    public CreateAccountRequestDTO(@JsonProperty(value = "initialBalance", required = true) BigDecimal initialBalance) {
+    public CreateAccountRequestDTO(@JsonProperty(value = "initialBalance", required = true)
+                                   BigDecimal initialBalance,
+                                   @JsonProperty(value = "currencyCode", required = true)
+                                   String currencyCode) {
         this.initialBalance = initialBalance;
+        this.currencyCode = currencyCode;
     }
 
     @JsonProperty("initialBalance")
@@ -20,4 +25,8 @@ public class CreateAccountRequestDTO {
         return initialBalance;
     }
 
+    @JsonProperty("currencyCode")
+    public String getCurrencyCode() {
+        return currencyCode;
+    }
 }

@@ -443,8 +443,9 @@ public class RouterTest {
     }
 
     private void shouldCreateAccount(int expectedId, String initialBalance) {
+        String expectedCurrencyCode = "EUR";
         given()
-            .body(buildCreateAccountRequestBody(initialBalance))
+            .body(buildCreateAccountRequestBody(initialBalance, expectedCurrencyCode))
         .when()
             .post(POST_ACCOUNT_URI)
         .then()
@@ -457,7 +458,9 @@ public class RouterTest {
             .and()
                 .body("body.balance", amountMatcher(initialBalance))
             .and()
-                .body("body.id", equalTo(expectedId));
+                .body("body.id", equalTo(expectedId))
+            .and()
+                .body("body.currencyCode", equalTo(expectedCurrencyCode));
     }
 
     private void shouldPlaceTransfer(TransferRequestDTO transferRequestDTO) {
@@ -514,9 +517,9 @@ public class RouterTest {
         return equalTo(Float.valueOf(initialBalance));
     }
 
-    private String buildCreateAccountRequestBody(String initialBalance) {
+    private String buildCreateAccountRequestBody(String initialBalance, String currencyCode) {
         try {
-            return jsonHelper.toJson(new CreateAccountRequestDTO(new BigDecimal(initialBalance)));
+            return jsonHelper.toJson(new CreateAccountRequestDTO(new BigDecimal(initialBalance), currencyCode));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "";

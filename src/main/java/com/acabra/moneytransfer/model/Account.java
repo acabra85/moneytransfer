@@ -11,16 +11,20 @@ public class Account {
 
     private final long id;
     private BigDecimal balance;
+    private final Currency currency;
+
     public transient final ReentrantLock lock = new ReentrantLock();
 
-    public Account(long id, BigDecimal initialBalance) {
+    public Account(long id, BigDecimal initialBalance, Currency currency) {
         this.id = id;
         this.balance = initialBalance;
+        this.currency = currency;
     }
 
-    public Account(long id) {
+    public Account(long id, Currency currency) {
         this.id = id;
         this.balance = BigDecimal.ZERO;
+        this.currency = currency;
     }
 
     public void withdraw(BigDecimal amount) {
@@ -62,6 +66,10 @@ public class Account {
 
     public long getId() {
         return id;
+    }
+
+    public Currency getCurrency() {
+        return currency;
     }
 
     @Override

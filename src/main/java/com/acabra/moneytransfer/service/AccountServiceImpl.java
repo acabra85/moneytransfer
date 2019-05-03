@@ -2,7 +2,9 @@ package com.acabra.moneytransfer.service;
 
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dto.AccountDTO;
+import com.acabra.moneytransfer.dto.CreateAccountRequestDTO;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.Currency;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,8 +18,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountDTO createAccount(BigDecimal amount) {
-        return AccountDTO.fromAccount(accountDao.createAccount(amount == null ? BigDecimal.ZERO : amount));
+    public AccountDTO createAccount(CreateAccountRequestDTO createAccountRequestDTO) {
+        BigDecimal initialBalance = createAccountRequestDTO == null ? BigDecimal.ZERO : createAccountRequestDTO.getInitialBalance();
+        Currency currency = Currency.getCurrencyFromCode(createAccountRequestDTO.getCurrencyCode());
+        Account account = accountDao.createAccount(initialBalance, currency);
+        return AccountDTO.fromAccount(account);
     }
 
     @Override

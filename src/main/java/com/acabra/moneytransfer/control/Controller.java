@@ -37,7 +37,7 @@ public class Controller {
     public MessageResponse<AccountDTO> createAccount(Request request, Response response) {
         try {
             CreateAccountRequestDTO createAccountRequestDTO = jsonHelper.fromJson(request.body(), CreateAccountRequestDTO.class);
-            AccountDTO accountDTO = accountService.createAccount(createAccountRequestDTO.getInitialBalance());
+            AccountDTO accountDTO = accountService.createAccount(createAccountRequestDTO);
             response.status(HttpStatus.CREATED_201);
             return new MessageResponse<>(getCallId(), HttpStatus.CREATED_201, false, "Success: Account Created", accountDTO);
         } catch (IOException e) {

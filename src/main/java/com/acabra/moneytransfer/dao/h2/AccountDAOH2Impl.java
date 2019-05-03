@@ -3,6 +3,7 @@ package com.acabra.moneytransfer.dao.h2;
 import com.acabra.moneytransfer.dao.AccountDAO;
 import com.acabra.moneytransfer.dao.AccountsTransferLock;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.Currency;
 import java.sql.ResultSet;
 import java.util.NoSuchElementException;
 import org.sql2o.Connection;
@@ -17,36 +18,39 @@ public class AccountDAOH2Impl implements AccountDAO {
     private final Sql2o sql2o;
 
     //SQL DDL
+    static final String CLEAN_DB = "DROP ALL OBJECTS DELETE FILES";
+
     static final String CREATE_TABLE_ACCOUNT =
             "CREATE TABLE account (" +
                 "account_id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                "account_balance DECIMAL(20, 4)" +
+                "account_balance DECIMAL(20, 4), " +
+                "account_currency_code Varchar(3) NOT NULL, " +
+                "FOREIGN KEY (account_currency_code) REFERENCES currency(currency_code)" +
             ")";
 
-    static final String CLEAN_DB = "DROP ALL OBJECTS DELETE FILES";
 
     //SQL DML
     private static final String RETRIEVE_ACCOUNT_BY_ID =
-            "SELECT account_id as id, account_balance as balance " +
+            "SELECT account_id as id, account_balance as balance, account_currency_code as currency_code " +
             "FROM account " +
             "WHERE account_id = :account_id";
 
     private static final String CREATE_NEW_ACCOUNT =
-            "INSERT INTO account(account_balance) " +
-                    "VALUES(:account_balance)";
+            "INSERT INTO account(account_balance, account_currency_code) " +
+                    "VALUES(:account_balance, :currency_code)";
 
     private static final String RETRIEVE_ALL_ACCOUNTS =
-            "SELECT account_id as id, account_balance as balance " +
+            "SELECT account_id as id, account_balance as balance, account_currency_code as currency_code " +
             "FROM account " +
             "ORDER BY account_id";
 
     private static final String RETRIEVE_ACCOUNTS_BY_IDS =
-            "SELECT account_id as id, account_balance as balance " +
+            "SELECT account_id as id, account_balance as balance, account_currency_code as currency_code " +
             "FROM account " +
             "WHERE account_id IN (:ids)";
 
     private static final String RETRIEVE_ACCOUNTS_FOR_TRANSFER =
-            "SELECT account_id as id, account_balance as balance " +
+            "SELECT account_id as id, account_balance as balance, account_currency_code as currency_code " +
             "FROM account " +
             "WHERE account_id IN (:sourceAccountId, :destinationAccountId) FOR UPDATE";
 
@@ -60,19 +64,22 @@ public class AccountDAOH2Impl implements AccountDAO {
         transient Account lock. By manually creating the Account objects the class constructor instantiates all fields
         as expected.
      */
-    ResultSetHandler<Account> ACCOUNT_RESULT_SET_HANDLER = (ResultSet resultSet) -> new Account(resultSet.getLong("id"), resultSet.getBigDecimal("balance"));
+    ResultSetHandler<Account> ACCOUNT_RESULT_SET_HANDLER =
+            (ResultSet resultSet) -> new Account(resultSet.getLong("id"),
+                                resultSet.getBigDecimal("balance"), Currency.getCurrencyFromCode(resultSet.getString("currency_code")));
 
     public AccountDAOH2Impl(Sql2o sql2o) {
         this.sql2o = sql2o;
     }
 
     @Override
-    public Account createAccount(BigDecimal initialBalance) {
+    public Account createAccount(BigDecimal initialBalance, Currency currency) {
         try (Connection connection = sql2o.open()){
             Long accountId = connection.createQuery(CREATE_NEW_ACCOUNT)
                     .addParameter("account_balance", initialBalance)
+                    .addParameter("currency_code", currency.code)
                     .executeUpdate().getKey(Long.class);
-            return new Account(accountId, initialBalance);
+            return new Account(accountId, initialBalance, currency);
         }
     }
 

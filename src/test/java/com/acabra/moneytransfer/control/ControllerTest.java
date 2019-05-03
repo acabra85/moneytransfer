@@ -8,6 +8,7 @@ import com.acabra.moneytransfer.exception.InsufficientFundsException;
 import com.acabra.moneytransfer.exception.InvalidDestinationAccountException;
 import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.response.MessageResponse;
 import com.acabra.moneytransfer.service.AccountService;
@@ -41,7 +42,7 @@ public class ControllerTest {
     TransferService transferService;
 
     @Mock
-    AccountService accountService;
+    AccountService accountServiceMock;
 
     @InjectMocks
     Controller underTest;
@@ -55,11 +56,13 @@ public class ControllerTest {
     @Test
     public void should_create_account() throws JsonProcessingException {
         //given
-        String reqBody = jsonHelper.toJson(new CreateAccountRequestDTO(BigDecimal.TEN));
-        AccountDTO expectedAccountDTO = AccountDTO.fromAccount(new Account(0L, BigDecimal.TEN));
+        String currencyCode = "EUR";
+        BigDecimal initialBalance = BigDecimal.TEN;
+        String reqBody = jsonHelper.toJson(new CreateAccountRequestDTO(initialBalance, currencyCode));
+        AccountDTO expectedAccountDTO = AccountDTO.fromAccount(new Account(0L, initialBalance, Currency.EUR));
 
         Mockito.when(req.body()).thenReturn(reqBody);
-        Mockito.when(accountService.createAccount(BigDecimal.TEN)).thenReturn(expectedAccountDTO);
+        Mockito.when(accountServiceMock.createAccount(Mockito.any())).thenReturn(expectedAccountDTO);
 
         //when
         MessageResponse<AccountDTO> accountCreateResponse = underTest.createAccount(req, resp);
@@ -68,6 +71,8 @@ public class ControllerTest {
         Assert.assertFalse(accountCreateResponse.isFailure());
         Assert.assertEquals(0L, accountCreateResponse.getId());
         Assert.assertEquals(expectedAccountDTO, accountCreateResponse.getBody());
+
+        Mockito.verify(accountServiceMock, Mockito.times(1)).createAccount(Mockito.any());
     }
 
     @Test
@@ -118,11 +123,11 @@ public class ControllerTest {
     @Test
     public void should_return_account_for_given_id() {
         //given
-        AccountDTO existentAccount = AccountDTO.fromAccount(new Account(1L, BigDecimal.TEN));
+        AccountDTO existentAccount = AccountDTO.fromAccount(new Account(1L, BigDecimal.TEN, Currency.EUR));
         String existentAccountIdParam = Long.toString(existentAccount.getId());
 
         Mockito.when(req.params(":accountId")).thenReturn(existentAccountIdParam);
-        Mockito.when(accountService.retrieveAccountById(existentAccount.getId())).thenReturn(existentAccount);
+        Mockito.when(accountServiceMock.retrieveAccountById(existentAccount.getId())).thenReturn(existentAccount);
 
         //when
         MessageResponse<AccountDTO> accountCreateResponse = underTest.getAccountById(req, resp);
@@ -135,7 +140,7 @@ public class ControllerTest {
     @Test
     public void should_return_empty_list_no_accounts_created() {
         //given
-        Mockito.when(accountService.retrieveAccounts()).thenReturn(Collections.emptyList());
+        Mockito.when(accountServiceMock.retrieveAccounts()).thenReturn(Collections.emptyList());
 
         //when
         MessageResponse<List<AccountDTO>> accountsResponse = underTest.getAccounts(req, resp);
@@ -151,12 +156,12 @@ public class ControllerTest {
     public void should_return_a_list_with_all_created_accounts() {
         //given
         List<Account> createdAccounts = new ArrayList<Account>(){{
-            add(new Account(1L, BigDecimal.TEN));
-            add(new Account(2L, BigDecimal.ZERO));
-            add(new Account(3L, BigDecimal.ZERO));
+            add(new Account(1L, BigDecimal.TEN, Currency.EUR));
+            add(new Account(2L, BigDecimal.ZERO, Currency.EUR));
+            add(new Account(3L, BigDecimal.ZERO, Currency.EUR));
         }};
 
-        Mockito.when(accountService.retrieveAccounts()).thenReturn(createdAccounts.stream().map(AccountDTO::fromAccount).collect(Collectors.toList()));
+        Mockito.when(accountServiceMock.retrieveAccounts()).thenReturn(createdAccounts.stream().map(AccountDTO::fromAccount).collect(Collectors.toList()));
 
         //when
         MessageResponse<List<AccountDTO>> accountsResponse = underTest.getAccounts(req, resp);

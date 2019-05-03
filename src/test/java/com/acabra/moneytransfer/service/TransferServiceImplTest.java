@@ -7,6 +7,7 @@ import com.acabra.moneytransfer.exception.InsufficientFundsException;
 import com.acabra.moneytransfer.exception.InvalidDestinationAccountException;
 import com.acabra.moneytransfer.exception.InvalidTransferAmountException;
 import com.acabra.moneytransfer.model.Account;
+import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.model.Transfer;
 import com.acabra.moneytransfer.request.TransferRequest;
 import com.acabra.moneytransfer.utils.TestUtils;
@@ -45,8 +46,8 @@ public class TransferServiceImplTest {
     @Test
     public void should_transfer_amount_between_accounts() {
         //given
-        Account sourceAccount = new Account(1L, new BigDecimal("200"));
-        Account destinationAccount = new Account(2L, new BigDecimal("50"));
+        Account sourceAccount = new Account(1L, new BigDecimal("200"), Currency.EUR);
+        Account destinationAccount = new Account(2L, new BigDecimal("50"), Currency.EUR);
         BigDecimal transferAmount = new BigDecimal("100");
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
@@ -78,8 +79,8 @@ public class TransferServiceImplTest {
     @Test(expected = InsufficientFundsException.class)
     public void should_fail_transfer_insufficient_balance_source_account() {
         //given
-        Account sourceAccount = new Account(1L, new BigDecimal("10"));
-        Account destinationAccount = new Account(2L, new BigDecimal("50"));
+        Account sourceAccount = new Account(1L, new BigDecimal("10"), Currency.EUR);
+        Account destinationAccount = new Account(2L, new BigDecimal("50"), Currency.EUR);
         BigDecimal transferAmount = BigDecimal.valueOf(20L);
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
         AccountsTransferLock accountTransferLockMock = Mockito.mock(AccountsTransferLock.class);
@@ -94,8 +95,8 @@ public class TransferServiceImplTest {
     @Test(expected = InvalidTransferAmountException.class)
     public void should_fail_transfer_amount_zero() {
         //given
-        Account sourceAccount = new Account(1L, new BigDecimal("200"));
-        Account destinationAccount = new Account(2L, new BigDecimal("50"));
+        Account sourceAccount = new Account(1L, new BigDecimal("200"), Currency.EUR);
+        Account destinationAccount = new Account(2L, new BigDecimal("50"), Currency.EUR);
         BigDecimal transferAmount = BigDecimal.ZERO;
         TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
 
@@ -130,8 +131,8 @@ public class TransferServiceImplTest {
     @Test
     public void should_fail_transfer_unable_to_obtain_account_lock_on_source_account() {
         //given
-        Account sourceAccount = new Account(1L, BigDecimal.TEN);
-        Account destinationAccount = new Account(2L, BigDecimal.TEN);
+        Account sourceAccount = new Account(1L, BigDecimal.TEN, Currency.EUR);
+        Account destinationAccount = new Account(2L, BigDecimal.TEN, Currency.EUR);
         AccountsTransferLock accountTransferLock = Mockito.mock(AccountsTransferLock.class);
 
         Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenReturn(accountTransferLock);
@@ -153,8 +154,8 @@ public class TransferServiceImplTest {
     @Test
     public void should_fail_transfer_unable_to_obtain_account_lock_on_destination_account() {
         //given
-        Account sourceAccount = new Account(3L, BigDecimal.TEN);
-        Account destinationAccount = new Account(6L, BigDecimal.TEN);
+        Account sourceAccount = new Account(3L, BigDecimal.TEN, Currency.EUR);
+        Account destinationAccount = new Account(6L, BigDecimal.TEN, Currency.EUR);
         AccountsTransferLock lock = Mockito.mock(AccountsTransferLock.class);
 
         Mockito.when(accountDAOMock.lockAccountsForTransfer(1L, 2L)).thenReturn(lock);
