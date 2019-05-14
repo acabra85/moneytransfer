@@ -13,11 +13,11 @@ public class MessageResponse<T> extends SimpleResponse {
     private T body;
 
     @JsonCreator
-    public MessageResponse(@JsonProperty("id") long id,
-                           @JsonProperty("statusCode") int statusCode,
-                           @JsonProperty("isFailure") final boolean isFailure,
-                           @JsonProperty("message") final String message,
-                           @JsonProperty("body") T body) {
+    public MessageResponse(@JsonProperty(value = "id", required = true) long id,
+                           @JsonProperty(value = "statusCode", required = true) int statusCode,
+                           @JsonProperty(value = "isFailure", required = true) final boolean isFailure,
+                           @JsonProperty(value = "message", required = true) final String message,
+                           @JsonProperty(value = "body", required = true) T body) {
         super(id, isFailure);
         this.message = message;
         this.statusCode = statusCode;

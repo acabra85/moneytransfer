@@ -8,13 +8,12 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class SimpleResponse implements Serializable {
 
-    @JsonProperty("id")
     protected final long id;
-
     protected final boolean isFailure;
 
     @JsonCreator
-    protected SimpleResponse( @JsonProperty("id") long id,  @JsonProperty("isFailure") boolean isFailure){
+    protected SimpleResponse(@JsonProperty(value = "id", required = true) long id,
+                             @JsonProperty(value = "isFailure", required = true) boolean isFailure){
         this.id = id;
         this.isFailure = isFailure;
     }

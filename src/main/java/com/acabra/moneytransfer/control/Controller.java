@@ -41,7 +41,7 @@ public class Controller {
             response.status(HttpStatus.CREATED_201);
             return new MessageResponse<>(getCallId(), HttpStatus.CREATED_201, false, "Success: Account Created", accountDTO);
         } catch (IOException e) {
-            MessageResponse badRequestResponse = badRequestResponse(response, "Failed to create the account {malformed json object}: " + request.body());
+            MessageResponse<AccountDTO> badRequestResponse = badRequestResponse(response, "Failed to create the account {malformed json object}: " + request.body());
             log.error(e.getMessage() + " " + badRequestResponse.getMessage(), e);
             return badRequestResponse;
         }
@@ -56,7 +56,7 @@ public class Controller {
         AccountDTO account = accountService.retrieveAccountById(accountId);
         if (account == null) {
             response.status(HttpStatus.NOT_FOUND_404);
-            MessageResponse objectMessageResponse = new MessageResponse<>(getCallId(), HttpStatus.NOT_FOUND_404 , false, "Could not find account with the given id: " + request.params(":accountId"), null);
+            MessageResponse<AccountDTO> objectMessageResponse = new MessageResponse<>(getCallId(), HttpStatus.NOT_FOUND_404 , false, "Could not find account with the given id: " + request.params(":accountId"), null);
             log.info(objectMessageResponse.getMessage());
             return objectMessageResponse;
         }
@@ -73,7 +73,7 @@ public class Controller {
             transferRequestDTO = jsonHelper.fromJson(request.body(), TransferRequestDTO.class);
         } catch (IOException ioe) {
             String extendedMessage = "Failed to fulfill the transfer {malformed json object}: " + request.body();
-            MessageResponse badRequestResponse = badRequestResponse(response, extendedMessage);
+            MessageResponse<TransferDTO> badRequestResponse = badRequestResponse(response, extendedMessage);
             log.error(ioe.getMessage() + " " + badRequestResponse.getMessage(), ioe);
             return badRequestResponse;
         }
@@ -121,9 +121,8 @@ public class Controller {
         }
     }
 
-    private MessageResponse<Object> badRequestResponse(Response response, String extendedMessage) {
+    private <T> MessageResponse<T> badRequestResponse(Response response, String extendedMessage) {
         response.status(HttpStatus.BAD_REQUEST_400);
-        MessageResponse failTransferResponse = new MessageResponse<>(getCallId(), HttpStatus.BAD_REQUEST_400, true, extendedMessage, null);
-        return failTransferResponse;
+        return new MessageResponse<>(getCallId(), HttpStatus.BAD_REQUEST_400, true, extendedMessage, null);
     }
 }

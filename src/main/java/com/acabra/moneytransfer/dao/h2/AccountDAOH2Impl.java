@@ -141,10 +141,7 @@ public class AccountDAOH2Impl implements AccountDAO {
     @Override
     public void updateAccountBalance(Account account) {
         try (Connection cx = sql2o.open()) {
-            cx.createQuery(UPDATE_ACCOUNT_BALANCE)
-                    .addParameter("balance", account.getBalance())
-                    .addParameter("id", account.getId())
-                    .executeUpdate();
+            updateAccountBalanceTransactional(account, cx);
         }
     }
 }
