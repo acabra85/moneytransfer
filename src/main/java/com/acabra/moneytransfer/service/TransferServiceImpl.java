@@ -19,12 +19,14 @@ public class TransferServiceImpl implements TransferService {
 
     private final TransferDAO transferDAO;
     private final AccountDAO accountDAO;
+    private final ForeignExchangeService fxService;
 
     Logger logger = LoggerFactory.getLogger(TransferServiceImpl.class);
 
-    public TransferServiceImpl(TransferDAO transferDAO, AccountDAO accountDAO) {
+    public TransferServiceImpl(TransferDAO transferDAO, AccountDAO accountDAO, ForeignExchangeService fxService) {
         this.transferDAO = transferDAO;
         this.accountDAO = accountDAO;
+        this.fxService = fxService;
     }
 
     @Override
@@ -42,7 +44,12 @@ public class TransferServiceImpl implements TransferService {
                             source.withdraw(transferRequest.getTransferAmount());
                             accountDAO.updateAccountBalanceTransactional(source, transferLock.getTx());
 
-                            destination.deposit(transferRequest.getTransferAmount());
+                            if (source.getCurrency() != destination.getCurrency()) {
+                                BigDecimal amountInDestinationCurrency = fxService.convertAmount(source.getCurrency(), destination.getCurrency(), transferRequest.getTransferAmount());
+                                destination.deposit(amountInDestinationCurrency);
+                            } else {
+                                destination.deposit(transferRequest.getTransferAmount());
+                            }
                             accountDAO.updateAccountBalanceTransactional(destination, transferLock.getTx());
 
                             return transferDAO.storeTransferAndCommitTransactional(transferRequest, transferLock.getTx());

@@ -26,7 +26,8 @@ public class TransferServiceImplConcurrencyTest {
     public void before() {
         Sql2o sql2o = H2Sql2oHelper.ofLocalKeepOpenSql2o();
         accountDAO = new AccountDAOH2Impl(sql2o);
-        underTest = new TransferServiceImpl(new TransferDAOH2Impl(sql2o), accountDAO);
+        ForeignExchangeService fxService = ForeignExchangeServiceImpl.getInstance();
+        underTest = new TransferServiceImpl(new TransferDAOH2Impl(sql2o), accountDAO, fxService);
     }
 
     @Test

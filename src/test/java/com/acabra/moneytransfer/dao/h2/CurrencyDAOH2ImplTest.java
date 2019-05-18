@@ -33,7 +33,7 @@ public class CurrencyDAOH2ImplTest {
     }
 
     @Test
-    public void should_return_all_valid_currencies() {
+    public void should_return_all_available_currencies() {
         //given
         List<Currency> availableCurrencies = Arrays.asList(Currency.values());
 

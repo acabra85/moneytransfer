@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransferServiceImplTest {
@@ -38,13 +40,16 @@ public class TransferServiceImplTest {
     @Mock
     TransferDAO transferDAOMock;
 
+    @Mock
+    ForeignExchangeService fxServiceMock;
+
     @InjectMocks
     private TransferServiceImpl underTest;
 
     private LocalDateTime NOW = LocalDateTime.now(Clock.systemUTC());
 
     @Test
-    public void should_transfer_amount_between_accounts() {
+    public void should_transfer_amount_between_accounts_same_currency() {
         //given
         Account sourceAccount = new Account(1L, new BigDecimal("200"), Currency.EUR);
         Account destinationAccount = new Account(2L, new BigDecimal("50"), Currency.EUR);
@@ -70,6 +75,45 @@ public class TransferServiceImplTest {
         //verify
         Mockito.verify(accountDAOMock, Mockito.times(1)).lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId());
         Mockito.verify(transferDAOMock, Mockito.times(1)).storeTransferAndCommitTransactional(any(), any());
+        Mockito.verify(accountTransferLock, Mockito.times(1)).getDestinationAccount();
+        Mockito.verify(accountTransferLock, Mockito.times(1)).getSourceAccount();
+
+    }
+
+
+    @Test
+    public void should_transfer_amount_between_accounts_different_currency() {
+        //given
+        Currency sourceCurrency = Currency.EUR;
+        Account sourceAccount = new Account(1L, new BigDecimal("200"), sourceCurrency);
+        Currency destinationCurrency = Currency.PLN;
+        Account destinationAccount = new Account(2L, new BigDecimal("50"), destinationCurrency);
+        BigDecimal transferAmount = new BigDecimal("100");
+        BigDecimal convertedAmount = new BigDecimal("427");
+
+        TransferRequest transferRequest = new TransferRequest(sourceAccount.getId(), destinationAccount.getId(), transferAmount);
+
+        Transfer internalTransfer = new Transfer(1L, NOW, sourceAccount.getId(), destinationAccount.getId(), transferAmount);
+        AccountsTransferLock accountTransferLock = Mockito.mock(AccountsTransferLock.class);
+
+        Mockito.when(accountTransferLock.getSourceAccount()).thenReturn(sourceAccount);
+        Mockito.when(accountTransferLock.getDestinationAccount()).thenReturn(destinationAccount);
+        Mockito.when(accountDAOMock.lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId())).thenReturn(accountTransferLock);
+        Mockito.when(transferDAOMock.storeTransferAndCommitTransactional(any(), any())).thenReturn(internalTransfer);
+        Mockito.when(fxServiceMock.convertAmount(eq(sourceCurrency), eq(destinationCurrency), eq(transferAmount))).thenReturn(convertedAmount);
+
+        //when
+        Transfer transfer = underTest.transfer(transferRequest);
+
+        //then
+        Assert.assertEquals(transfer.id, internalTransfer.id);
+        TestUtils.assertBigDecimalEquals("100", sourceAccount.getBalance());
+        TestUtils.assertBigDecimalEquals("477", destinationAccount.getBalance());
+
+        //verify
+        Mockito.verify(accountDAOMock, Mockito.times(1)).lockAccountsForTransfer(sourceAccount.getId(), destinationAccount.getId());
+        Mockito.verify(transferDAOMock, Mockito.times(1)).storeTransferAndCommitTransactional(any(), any());
+        Mockito.verify(fxServiceMock, Mockito.times(1)).convertAmount(sourceCurrency, destinationCurrency, transferAmount);
         Mockito.verify(accountTransferLock, Mockito.times(1)).getDestinationAccount();
         Mockito.verify(accountTransferLock, Mockito.times(1)).getSourceAccount();
 
@@ -146,7 +190,7 @@ public class TransferServiceImplTest {
         Mockito.when(accountTransferLock.getDestinationAccount()).thenReturn(destinationAccount);
 
         //lock the source account on a different thread
-        Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(sourceAccount));
+        Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(sourceAccount.lock));
 
         //when
         Transfer transfer = underTest.transfer(new TransferRequest(1L, 2L, BigDecimal.TEN));
@@ -169,7 +213,7 @@ public class TransferServiceImplTest {
         Mockito.when(lock.getDestinationAccount()).thenReturn(destinationAccount);
 
         //lock the source account on a different thread
-        Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(destinationAccount));
+        Executors.newFixedThreadPool(2).submit(acquireLockOnDifferentThread(destinationAccount.lock));
 
         //when
         Transfer transfer = underTest.transfer(new TransferRequest(1L, 2L, BigDecimal.TEN));
@@ -246,15 +290,15 @@ public class TransferServiceImplTest {
         Assert.assertTrue(allTransfersByAccount.isEmpty());
     }
 
-    private Runnable acquireLockOnDifferentThread(Account accountToLock) {
+    private Runnable acquireLockOnDifferentThread(Lock accountLock) {
         return () -> {
-            accountToLock.lock.lock();
+            accountLock.lock();
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                accountToLock.lock.unlock();
+                accountLock.unlock();
             }
         };
     }

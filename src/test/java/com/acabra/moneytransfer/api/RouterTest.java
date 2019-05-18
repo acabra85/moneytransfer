@@ -12,6 +12,8 @@ import com.acabra.moneytransfer.dto.TransferRequestDTO;
 import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.response.MessageResponse;
 import com.acabra.moneytransfer.service.AccountServiceImpl;
+import com.acabra.moneytransfer.service.ForeignExchangeService;
+import com.acabra.moneytransfer.service.ForeignExchangeServiceImpl;
 import com.acabra.moneytransfer.service.TransferServiceImpl;
 import com.acabra.moneytransfer.utils.JsonHelper;
 import com.acabra.moneytransfer.utils.TestUtils;
@@ -63,8 +65,9 @@ public class RouterTest {
     public void before() {
         sql2o = H2Sql2oHelper.ofLocalKeepOpenSql2o();
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
+        ForeignExchangeService fxService = ForeignExchangeServiceImpl.getInstance();
         new Router(new Controller(new AccountServiceImpl(accountDAO),
-        new TransferServiceImpl(new TransferDAOH2Impl(sql2o), accountDAO))).registerRoutes();
+        new TransferServiceImpl(new TransferDAOH2Impl(sql2o), accountDAO, fxService))).registerRoutes();
     }
 
     @After

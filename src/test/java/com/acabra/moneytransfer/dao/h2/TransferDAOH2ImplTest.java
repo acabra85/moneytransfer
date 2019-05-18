@@ -42,7 +42,7 @@ public class TransferDAOH2ImplTest {
     }
 
     @Test
-    public void should_return_persisted_transaction() {
+    public void should_return_persisted_transfer() {
         //given
         BigDecimal transferAmount = BigDecimal.TEN;
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);

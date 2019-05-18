@@ -9,6 +9,8 @@ import com.acabra.moneytransfer.dao.h2.H2Sql2oHelper;
 import com.acabra.moneytransfer.dao.h2.TransferDAOH2Impl;
 import com.acabra.moneytransfer.service.AccountService;
 import com.acabra.moneytransfer.service.AccountServiceImpl;
+import com.acabra.moneytransfer.service.ForeignExchangeService;
+import com.acabra.moneytransfer.service.ForeignExchangeServiceImpl;
 import com.acabra.moneytransfer.service.TransferService;
 import com.acabra.moneytransfer.service.TransferServiceImpl;
 import org.sql2o.Sql2o;
@@ -26,7 +28,8 @@ public class BankingApp {
         AccountDAO accountDAO = new AccountDAOH2Impl(sql2o);
         AccountService accountService = new AccountServiceImpl(accountDAO);
         TransferDAO transferDAO = new TransferDAOH2Impl(sql2o);
-        TransferService transferService = new TransferServiceImpl(transferDAO, accountDAO);
+        ForeignExchangeServiceImpl fxService = ForeignExchangeServiceImpl.getInstance();
+        TransferService transferService = new TransferServiceImpl(transferDAO, accountDAO, fxService);
         Controller controller = new Controller(accountService, transferService);
         this.router = new Router(controller);
     }

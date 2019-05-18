@@ -45,19 +45,22 @@ public class AccountDAOH2ImplTest {
     public void should_create_account_negative_balance() {
         //given
         BigDecimal initialAmount = BigDecimal.valueOf(-1L);
+        Currency expectedCurrency = Currency.EUR;
 
         //when
-        Account account = underTest.createAccount(initialAmount, Currency.EUR);
+        Account account = underTest.createAccount(initialAmount, expectedCurrency);
 
         //then
         Assert.assertEquals(initialAmount, account.getBalance());
+        Assert.assertEquals(expectedCurrency, account.getCurrency());
     }
 
     @Test
     public void should_retrieve_account_by_id() {
         //given
         BigDecimal initialAmount = BigDecimal.TEN;
-        long accountId = underTest.createAccount(initialAmount, Currency.EUR).getId();
+        Currency expectedCurrency = Currency.EUR;
+        long accountId = underTest.createAccount(initialAmount, expectedCurrency).getId();
 
         //when
         Account queryAccount = underTest.retrieveAccountById(accountId);
@@ -65,6 +68,7 @@ public class AccountDAOH2ImplTest {
         //then
         TestUtils.assertBigDecimalEquals(initialAmount, queryAccount.getBalance());
         Assert.assertEquals(accountId, queryAccount.getId());
+        Assert.assertEquals(expectedCurrency, queryAccount.getCurrency());
     }
 
     @Test
@@ -72,9 +76,10 @@ public class AccountDAOH2ImplTest {
         //given
         BigDecimal initialAmount = BigDecimal.ONE;
         int expectedAccountSize = 3;
+        Currency expectedCurrency = Currency.EUR;
 
         for (int i = 0; i < expectedAccountSize; i++) {
-            underTest.createAccount(initialAmount, Currency.EUR);
+            underTest.createAccount(initialAmount, expectedCurrency);
         }
 
         //when
@@ -86,22 +91,30 @@ public class AccountDAOH2ImplTest {
         for (Account account : accounts) {
             TestUtils.assertBigDecimalEquals(initialAmount, account.getBalance());
             Assert.assertFalse(seenAccountIds.contains(account.getId()));
+            Assert.assertEquals(expectedCurrency, account.getCurrency());
             seenAccountIds.add(account.getId());
         }
     }
 
     @Test
     public void should_retrieve_created_accounts_by_id() {
+        //given
         BigDecimal initialAmount = BigDecimal.ONE;
         int expectedAccountSize = 3;
+        Currency expectedCurrency = Currency.GBP;
         List<Long> ids = new ArrayList<>(expectedAccountSize);
         for (int i = 0; i < expectedAccountSize; i++) {
-            ids.add(underTest.createAccount(initialAmount, Currency.EUR).getId());
+            ids.add(underTest.createAccount(initialAmount, expectedCurrency).getId());
         }
+        
+        //when
         List<Account> accounts = underTest.retrieveAccountsByIds(ids);
+        
+        //then
         Assert.assertEquals(expectedAccountSize, accounts.size());
         for (Account account : accounts) {
             TestUtils.assertBigDecimalEquals(initialAmount, account.getBalance());
+            Assert.assertEquals(expectedCurrency, account.getCurrency());
         }
     }
 
@@ -109,7 +122,8 @@ public class AccountDAOH2ImplTest {
     public void should_update_account_balance() {
         //given
         BigDecimal initialAmount = BigDecimal.TEN;
-        Account account = underTest.createAccount(initialAmount, Currency.EUR);
+        Currency expectedCurrency = Currency.EUR;
+        Account account = underTest.createAccount(initialAmount, expectedCurrency);
         account.withdraw(BigDecimal.ONE);
         BigDecimal expectedAccountBalance = initialAmount.subtract(BigDecimal.ONE);
 
@@ -117,14 +131,17 @@ public class AccountDAOH2ImplTest {
         underTest.updateAccountBalance(account);
 
         //then
-        TestUtils.assertBigDecimalEquals(expectedAccountBalance, underTest.retrieveAccountById(account.getId()).getBalance());
+        Account updatedAccount = underTest.retrieveAccountById(account.getId());
+        TestUtils.assertBigDecimalEquals(expectedAccountBalance, updatedAccount.getBalance());
+        Assert.assertEquals(expectedCurrency, updatedAccount.getCurrency());
     }
 
     @Test
     public void should_update_account_balance_transactional() {
         //given
         BigDecimal initialAmount = BigDecimal.TEN;
-        Account account = underTest.createAccount(initialAmount, Currency.EUR);
+        Currency expectedCurrency = Currency.EUR;
+        Account account = underTest.createAccount(initialAmount, expectedCurrency);
         account.withdraw(BigDecimal.ONE);
         BigDecimal expectedBalanceAfterTransfer = initialAmount.subtract(BigDecimal.ONE);
         Connection tx = sql2o.beginTransaction();
@@ -134,11 +151,13 @@ public class AccountDAOH2ImplTest {
         tx.commit();
 
         //then
-        TestUtils.assertBigDecimalEquals(expectedBalanceAfterTransfer, underTest.retrieveAccountById(account.getId()).getBalance());
+        Account updatedAccount = underTest.retrieveAccountById(account.getId());
+        TestUtils.assertBigDecimalEquals(expectedBalanceAfterTransfer, updatedAccount.getBalance());
+        Assert.assertEquals(expectedCurrency, updatedAccount.getCurrency());
     }
 
     @Test
-    public void should_retrieve_account_lock_for_transfer() {
+    public void should_retrieve_account_lock_for_transfer_same_currency() {
         //given
         Account sourceAccount = underTest.createAccount(BigDecimal.TEN, Currency.EUR);
         Account destinationAccount = underTest.createAccount(BigDecimal.TEN, Currency.EUR);
