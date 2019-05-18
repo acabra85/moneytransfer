@@ -5,7 +5,6 @@ import com.acabra.moneytransfer.dto.AccountDTO;
 import com.acabra.moneytransfer.dto.CreateAccountRequestDTO;
 import com.acabra.moneytransfer.model.Account;
 import com.acabra.moneytransfer.model.Currency;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,10 +18,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDTO createAccount(CreateAccountRequestDTO createAccountRequestDTO) {
-        BigDecimal initialBalance = createAccountRequestDTO == null ? BigDecimal.ZERO : createAccountRequestDTO.getInitialBalance();
+        validateCreateAccountRequest(createAccountRequestDTO);
         Currency currency = Currency.getCurrencyFromCode(createAccountRequestDTO.getCurrencyCode());
-        Account account = accountDao.createAccount(initialBalance, currency);
+        Account account = accountDao.createAccount(createAccountRequestDTO.getInitialBalance(), currency);
         return AccountDTO.fromAccount(account);
+    }
+
+    private void validateCreateAccountRequest(CreateAccountRequestDTO createAccountRequestDTO) {
+        if (null == createAccountRequestDTO) {
+            throw new NullPointerException("Invalid create account request: null");
+        }
     }
 
     @Override

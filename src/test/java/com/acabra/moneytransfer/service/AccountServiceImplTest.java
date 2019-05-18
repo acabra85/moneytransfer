@@ -75,6 +75,12 @@ public class AccountServiceImplTest {
         Assert.assertNull(underTest.retrieveAccountById(accountId));
     }
 
+    @Test(expected = NullPointerException.class)
+    public void should_fail_request_object_null() {
+        //then when
+        underTest.createAccount(null);
+    }
+
     @Test
     public void should_create_account_zero_balance_for_null_balance() {
         //given

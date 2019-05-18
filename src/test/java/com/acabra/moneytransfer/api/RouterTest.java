@@ -9,6 +9,7 @@ import com.acabra.moneytransfer.dto.AccountDTO;
 import com.acabra.moneytransfer.dto.CreateAccountRequestDTO;
 import com.acabra.moneytransfer.dto.TransferDTO;
 import com.acabra.moneytransfer.dto.TransferRequestDTO;
+import com.acabra.moneytransfer.model.Currency;
 import com.acabra.moneytransfer.response.MessageResponse;
 import com.acabra.moneytransfer.service.AccountServiceImpl;
 import com.acabra.moneytransfer.service.TransferServiceImpl;
@@ -74,13 +75,15 @@ public class RouterTest {
     @Test
     public void should_create_account() {
         String initialBalance = "2000";
-        shouldCreateAccount(1, initialBalance);
+        Currency expectedCurrency = Currency.COP;
+        shouldCreateAccount(1, initialBalance, expectedCurrency);
     }
 
     @Test
     public void should_create_account_negative_balance() {
         String initialBalance = "-2000";
-        shouldCreateAccount(1, initialBalance);
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(1, initialBalance, expectedCurrency);
     }
 
     @Test
@@ -88,12 +91,13 @@ public class RouterTest {
         //given
         String initialBalance = "5000";
         int accountId = 1;
+        Currency expectedCurrency = Currency.EUR;
 
         //when
-        shouldCreateAccount(accountId, initialBalance);
+        shouldCreateAccount(accountId, initialBalance, expectedCurrency);
 
         //then
-        validateAccount(accountId, initialBalance);
+        validateAccount(accountId, initialBalance, expectedCurrency);
     }
 
     @Test
@@ -110,9 +114,10 @@ public class RouterTest {
     public void should_retrieve_list_with_accounts_created() {
         //given
         int accountsCreated = 3;
-        shouldCreateAccount(1, "110");
-        shouldCreateAccount(2, "320");
-        shouldCreateAccount(3, "230");
+        Currency expectedCurrency = Currency.USD;
+        shouldCreateAccount(1, "110", expectedCurrency);
+        shouldCreateAccount(2, "320", expectedCurrency);
+        shouldCreateAccount(3, "230", expectedCurrency);
 
         //when
         MessageResponse<List<AccountDTO>> accountsResponse = get(GET_ALL_ACCOUNTS).as(ALL_ACCOUNTS_RESPONSE_TYPE_REF);
@@ -140,12 +145,13 @@ public class RouterTest {
     }
 
     @Test
-    public void should_place_transfer() {
+    public void should_place_transfer_same_currency() {
         //given
         int sourceAccountId = 1;
         int destinationAccountId = 2;
-        shouldCreateAccount(sourceAccountId, "1800.25");
-        shouldCreateAccount(destinationAccountId, "300.05");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(sourceAccountId, "1800.25", expectedCurrency);
+        shouldCreateAccount(destinationAccountId, "300.05", expectedCurrency);
         String transferAmount = "150.10";
         TransferRequestDTO transferRequestDTO = buildTransferRequestDTO(sourceAccountId, destinationAccountId, transferAmount);
 
@@ -153,8 +159,8 @@ public class RouterTest {
         shouldPlaceTransfer(transferRequestDTO);
 
         //then
-        validateAccount(sourceAccountId, "1650.15");
-        validateAccount(destinationAccountId, "450.15");
+        validateAccount(sourceAccountId, "1650.15", expectedCurrency);
+        validateAccount(destinationAccountId, "450.15", expectedCurrency);
     }
 
     @Test
@@ -162,7 +168,8 @@ public class RouterTest {
         //given
         int sourceAccountId = -1;
         int destinationAccountId = 1;
-        shouldCreateAccount(destinationAccountId, "300.05");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(destinationAccountId, "300.05", expectedCurrency);
         String transferAmount = "100";
         TransferRequestDTO transferRequestDTO = buildTransferRequestDTO(sourceAccountId, destinationAccountId, transferAmount);
 
@@ -177,7 +184,8 @@ public class RouterTest {
         //given
         int sourceAccountId = 1;
         int destinationAccountId = -1;
-        shouldCreateAccount(sourceAccountId, "300.05");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(sourceAccountId, "300.05", expectedCurrency);
         String transferAmount = "100";
         TransferRequestDTO transferRequestDTO = buildTransferRequestDTO(sourceAccountId, destinationAccountId, transferAmount);
 
@@ -192,8 +200,9 @@ public class RouterTest {
         //given
         int sourceAccountId = 1;
         int destinationAccountId = 2;
-        shouldCreateAccount(sourceAccountId, "100");
-        shouldCreateAccount(destinationAccountId, "100");
+        Currency expectedCurrency = Currency.EUR;
+        shouldCreateAccount(sourceAccountId, "100", expectedCurrency);
+        shouldCreateAccount(destinationAccountId, "100", expectedCurrency);
         String transferAmount = "0";
         TransferRequestDTO transferRequestDTO = buildTransferRequestDTO(sourceAccountId, destinationAccountId, transferAmount);
 
@@ -208,8 +217,9 @@ public class RouterTest {
         //given
         int sourceAccountId = 1;
         int destinationAccountId = 2;
-        shouldCreateAccount(sourceAccountId, "100");
-        shouldCreateAccount(destinationAccountId, "100");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(sourceAccountId, "100", expectedCurrency);
+        shouldCreateAccount(destinationAccountId, "100", expectedCurrency);
         String transferAmount = "-100";
         TransferRequestDTO transferRequestDTO = buildTransferRequestDTO(sourceAccountId, destinationAccountId, transferAmount);
 
@@ -224,8 +234,9 @@ public class RouterTest {
         //given
         int sourceAccountId = 1;
         int destinationAccountId = 2;
-        shouldCreateAccount(sourceAccountId, "100");
-        shouldCreateAccount(destinationAccountId, "100");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(sourceAccountId, "100", expectedCurrency);
+        shouldCreateAccount(destinationAccountId, "100", expectedCurrency);
         String transferAmount = "100.01";
         TransferRequestDTO transferRequestDTO = buildTransferRequestDTO(sourceAccountId, destinationAccountId, transferAmount);
 
@@ -236,14 +247,15 @@ public class RouterTest {
     }
 
     @Test @SuppressWarnings("Duplicates")
-    public void should_retrieve_all_placed_transfers() {
+    public void should_retrieve_all_placed_transfers_same_currency() {
         //given
         int accountAId = 1;
         int accountBId = 2;
         int accountCId = 3;
-        shouldCreateAccount(accountAId, "900.25");
-        shouldCreateAccount(accountBId, "600.78");
-        shouldCreateAccount(accountCId, "333.55");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(accountAId, "900.25", expectedCurrency);
+        shouldCreateAccount(accountBId, "600.78", expectedCurrency);
+        shouldCreateAccount(accountCId, "333.55", expectedCurrency);
 
         String transferAmountAtoB = "0.25";
         String transferAmountBtoC = "1.55";
@@ -273,9 +285,9 @@ public class RouterTest {
         Assert.assertEquals(HttpStatus.OK_200, response.getStatusCode());
         Assert.assertEquals(transfers.size(), response.getBody().size());
 
-        validateAccount(accountAId, "1149.65");
-        validateAccount(accountBId, "597.13");
-        validateAccount(accountCId, "87.80");
+        validateAccount(accountAId, "1149.65", expectedCurrency);
+        validateAccount(accountBId, "597.13", expectedCurrency);
+        validateAccount(accountCId, "87.80", expectedCurrency);
     }
 
     @Test @SuppressWarnings("Duplicates")
@@ -284,9 +296,10 @@ public class RouterTest {
         int accountAId = 1;
         int accountBId = 2;
         int accountCId = 3;
-        shouldCreateAccount(accountAId, "900.25");
-        shouldCreateAccount(accountBId, "600.78");
-        shouldCreateAccount(accountCId, "333.55");
+        Currency expectedCurrency = Currency.PLN;
+        shouldCreateAccount(accountAId, "900.25", expectedCurrency);
+        shouldCreateAccount(accountBId, "600.78", expectedCurrency);
+        shouldCreateAccount(accountCId, "333.55", expectedCurrency);
 
         String transferAmountAtoB = "0.25";
         String transferAmountBtoC = "1.55";
@@ -346,9 +359,9 @@ public class RouterTest {
                 .filter(tfxDTO -> tfxDTO.getDestinationAccountId() == accountCId || tfxDTO.getSourceAccountId() == accountCId)
                 .count());
 
-        validateAccount(accountAId, "1149.65");
-        validateAccount(accountBId, "597.13");
-        validateAccount(accountCId, "87.80");
+        validateAccount(accountAId, "1149.65", expectedCurrency);
+        validateAccount(accountBId, "597.13", expectedCurrency);
+        validateAccount(accountCId, "87.80", expectedCurrency);
     }
 
     @Test
@@ -404,8 +417,9 @@ public class RouterTest {
                 .and().body("isFailure", equalTo(true))
                 .and().body("body", Matchers.nullValue());
 
-        shouldCreateAccount(1, "0");
-        shouldCreateAccount(2, "50");
+        Currency expectedCurrency = Currency.GBP;
+        shouldCreateAccount(1, "0", expectedCurrency);
+        shouldCreateAccount(2, "50", expectedCurrency);
         shouldPlaceTransfer(buildTransferRequestDTO(2, 1, "25.40"));
 
         //valid transfers
@@ -424,7 +438,7 @@ public class RouterTest {
                 .and().body("body", Matchers.hasSize(1));
     }
 
-    private void validateAccount(int accountId, String initialBalance) {
+    private void validateAccount(int accountId, String initialBalance, Currency expectedCurrency) {
         given()
             .pathParam("accountId", accountId)
         .when()
@@ -439,13 +453,14 @@ public class RouterTest {
             .and()
                 .body("body.balance", amountMatcher(initialBalance))
             .and()
-                .body("body.id", equalTo(accountId));
+                .body("body.id", equalTo(accountId))
+            .and()
+                .body("body.currencyCode", equalTo(expectedCurrency.code));
     }
 
-    private void shouldCreateAccount(int expectedId, String initialBalance) {
-        String expectedCurrencyCode = "EUR";
+    private void shouldCreateAccount(int expectedId, String initialBalance, Currency expectedCurrency) {
         given()
-            .body(buildCreateAccountRequestBody(initialBalance, expectedCurrencyCode))
+            .body(buildCreateAccountRequestBody(initialBalance, expectedCurrency.code))
         .when()
             .post(POST_ACCOUNT_URI)
         .then()
@@ -460,7 +475,7 @@ public class RouterTest {
             .and()
                 .body("body.id", equalTo(expectedId))
             .and()
-                .body("body.currencyCode", equalTo(expectedCurrencyCode));
+                .body("body.currencyCode", equalTo(expectedCurrency.code));
     }
 
     private void shouldPlaceTransfer(TransferRequestDTO transferRequestDTO) {

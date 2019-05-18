@@ -78,6 +78,9 @@ public class TransferServiceImpl implements TransferService {
     }
 
     private void validateTransferRequest(TransferRequest transferRequest) {
+        if (null == transferRequest) {
+            throw new NullPointerException("Invalid transfer request is null");
+        }
         if (BigDecimal.ZERO.compareTo(transferRequest.getTransferAmount()) >= 0 ) {
             throw new InvalidTransferAmountException("Transfer amount should be greater than zero:" + transferRequest.getTransferAmount());
         }

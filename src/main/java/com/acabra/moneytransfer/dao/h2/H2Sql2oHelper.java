@@ -37,11 +37,8 @@ public class H2Sql2oHelper {
 
     private static void initializeCurrencies(Sql2o sql2o) {
         CurrencyDAO currencyDAO = new CurrencyH2DAOImpl(sql2o);
-        try (Connection tx = sql2o.beginTransaction()) {
-            for (Currency currency : Currency.values()) {
-                currencyDAO.createCurrencyTransactional(currency, tx);
-            }
-            tx.commit();
+        for (Currency currency : Currency.values()) {
+            currencyDAO.createCurrency(currency);
         }
     }
 

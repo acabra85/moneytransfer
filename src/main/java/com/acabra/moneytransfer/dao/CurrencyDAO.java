@@ -5,7 +5,6 @@ import org.sql2o.Connection;
 
 public interface CurrencyDAO {
 
-    void createCurrency(Currency currency);
+    boolean createCurrency(Currency currency);
 
-    void createCurrencyTransactional(Currency currency, Connection tx);
 }

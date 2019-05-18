@@ -135,6 +135,9 @@ public class ControllerTest {
         //then
         Assert.assertFalse(accountCreateResponse.isFailure());
         Assert.assertEquals(HttpStatus.OK_200, accountCreateResponse.getStatusCode());
+        Assert.assertEquals(existentAccount.getId(), accountCreateResponse.getBody().getId());
+        Assert.assertEquals(existentAccount.getBalance(), accountCreateResponse.getBody().getBalance());
+        Assert.assertEquals(existentAccount.getCurrencyCode(), accountCreateResponse.getBody().getCurrencyCode());
     }
 
     @Test
@@ -169,6 +172,7 @@ public class ControllerTest {
         //then
         for (int i = 0; i < createdAccounts.size(); i++) {
             Assert.assertEquals(createdAccounts.get(i).getId(), accountsResponse.getBody().get(i).getId());
+            Assert.assertEquals(createdAccounts.get(i).getCurrency().code, accountsResponse.getBody().get(i).getCurrencyCode());
         }
         Assert.assertFalse(accountsResponse.isFailure());
         Assert.assertEquals(HttpStatus.OK_200, accountsResponse.getStatusCode());

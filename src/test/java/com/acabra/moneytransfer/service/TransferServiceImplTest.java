@@ -128,6 +128,12 @@ public class TransferServiceImplTest {
         //then
     }
 
+    @Test(expected = NullPointerException.class)
+    public void should_fail_request_object_null() {
+        //then when
+        underTest.transfer(null);
+    }
+
     @Test
     public void should_fail_transfer_unable_to_obtain_account_lock_on_source_account() {
         //given
