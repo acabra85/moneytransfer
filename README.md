@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/acabra85/moneytransfer.svg?branch=master)](https://travis-ci.org/acabra85/moneytransfer)
+[![Build Status](https://app.travis-ci.com/acabra85/moneytransfer.svg?branch=master)](https://app.travis-ci.com/acabra85/moneytransfer)
 [![codecov](https://codecov.io/gh/acabra85/moneytransfer/branch/master/graph/badge.svg)](https://codecov.io/gh/acabra85/moneytransfer)
 
 # moneytransfer
